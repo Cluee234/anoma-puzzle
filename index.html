@@ -101,8 +101,8 @@
   let timerId = null;
   let usedHints = new Set();
   let hintsUsedCount = 0;
-  let score = parseInt(localStorage.getItem('anoma_score') || '0', 10);
-  let rounds = parseInt(localStorage.getItem('anoma_rounds') || '0', 10);
+  let score = 0;
+  let rounds = 0;
 
   const timerBar = document.getElementById('timerBar');
   const timeLabel = document.getElementById('timeLeft');
@@ -120,7 +120,6 @@
 
   function randInt(min,max){ return Math.floor(Math.random()*(max-min+1))+min; }
   function isPrime(n){ if(n<2)return false; for(let i=2;i<=Math.sqrt(n);i++) if(n%i===0) return false; return true; }
-  function save(){ localStorage.setItem('anoma_score', String(score)); localStorage.setItem('anoma_rounds', String(rounds)); }
   function setMessage(text, tone){
     messageEl.textContent = text;
     if(tone==='ok') messageEl.style.color = '#c8ffd8';
@@ -129,7 +128,11 @@
     else messageEl.style.color = '#fff';
   }
 
-  function renderStats(){ attemptsEl.textContent = String(rounds); scoreEl.textContent = String(score); }
+  function renderStats(){
+    attemptsEl.textContent = String(rounds);
+    scoreEl.textContent = String(score);
+  }
+
   function renderHints(){
     hintBtns.forEach(btn => {
       const t = btn.dataset.type;
@@ -165,6 +168,7 @@
       cluesEl.innerHTML = '<em>No hints yet — click a hint above.</em>';
     }
   }
+
   function renderTimer(){
     const pct = Math.max(0, (timeLeft / START_SECONDS) * 100);
     timerBar.style.width = pct + '%';
@@ -199,13 +203,15 @@
   function endRound(won){
     clearInterval(timerId);
     rounds += 1;
-    save(); renderStats();
+    renderStats();
     guessInput.disabled = true; submitBtn.disabled = true;
     tryBtn.style.display = 'inline-block';
+
     if(won){
       setMessage('🎉 Correct — round complete. Start a new round when ready.', 'ok');
       try{ successAudio.currentTime = 0; successAudio.play().catch(()=>{}); }catch(e){}
-      score += 1; save(); renderStats();
+      score += 1;
+      renderStats();
     } else {
       setMessage(`⏳ Time's up — the number was ${secret}.`, 'err');
       try{ failAudio.currentTime = 0; failAudio.play().catch(()=>{}); }catch(e){}
@@ -213,7 +219,8 @@
   }
 
   function tick(){
-    timeLeft--; if(timeLeft<0) timeLeft=0;
+    timeLeft--;
+    if(timeLeft < 0) timeLeft = 0;
     renderTimer();
     if(timeLeft <= 0) endRound(false);
   }
@@ -259,10 +266,36 @@
     }
   }
 
+  function tryNewRound(){
+    if(rounds < MAX_ROUNDS){
+      startRound();
+      setMessage('', null);
+      tryBtn.style.display = 'none';
+      restartBtn.style.display = 'none';
+    }
+  }
+
   function restartGame(){
     score = 0;
     rounds = 0;
-    save();
     setMessage('', null);
     tryBtn.style.display = 'none';
     restartBtn.style.display = 'none';
+    renderStats();
+    startRound();
+  }
+
+  hintBtns.forEach(btn => {
+    btn.addEventListener('click', () => handleHint(btn.dataset.type, btn));
+  });
+  submitBtn.addEventListener('click', submitGuess);
+  tryBtn.addEventListener('click', tryNewRound);
+  restartBtn.addEventListener('click', restartGame);
+
+  // Start initial round on load
+  startRound();
+
+})();
+</script>
+</body>
+</html>
