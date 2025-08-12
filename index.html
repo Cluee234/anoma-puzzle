@@ -1,248 +1,39 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
-<meta charset="UTF-8" />
-<title>Anoma Puzzle: Secret Number Proof</title>
-<style>
-  html, body {
-    margin: 0; padding: 0; height: 100%; width: 100%;
-    background-color: #111;
-    color: #fff;
-    font-family: Arial, sans-serif;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-  }
-  .container {
-    background: #220000;
-    padding: 30px 40px;
-    border-radius: 20px;
-    max-width: 440px;
-    width: 90%;
-    text-align: center;
-    box-shadow: 0 0 30px #ff2b2baa;
-  }
-  h1 {
-    color: #ff2b2b;
-    margin-bottom: 20px;
-  }
-  #timer {
-    font-weight: bold;
-    font-size: 1.3em;
-    margin-bottom: 25px;
-    color: #ff6666;
-  }
-  .btn-group button {
-    background: #ff2b2b;
-    border: none;
-    padding: 12px 20px;
-    border-radius: 12px;
-    color: white;
-    font-weight: bold;
-    margin: 6px;
-    cursor: pointer;
-    min-width: 130px;
-  }
-  .btn-group button:disabled {
-    background: #550000;
-    cursor: not-allowed;
-  }
-  input[type=number] {
-    width: 100%;
-    font-size: 1.2em;
-    padding: 10px;
-    margin: 20px 0 25px;
-    border-radius: 12px;
-    border: 2px solid #ff2b2b;
-    background: #330000;
-    color: white;
-  }
-  #attemptsLeft {
-    margin-bottom: 15px;
-    font-weight: 600;
-    color: #ff6666;
-  }
-  #answers ul {
-    list-style: disc inside;
-    max-height: 140px;
-    overflow-y: auto;
-    padding-left: 15px;
-    color: #eee;
-    text-align: left;
-    margin: 0 0 20px 0;
-  }
-  #result {
-    font-weight: 700;
-    font-size: 1.3em;
-    min-height: 40px;
-  }
-  .success {
-    color: #ff2b2b;
-  }
-  .failure {
-    color: #ff6666;
-  }
-</style>
+  <title>Simple Test</title>
+  <style>
+    body { background: black; color: red; font-family: Arial; padding: 20px;}
+    button { margin: 5px; padding: 10px; font-weight: bold;}
+  </style>
 </head>
 <body>
-<div class="container" role="main" aria-label="Anoma Puzzle: Secret Number Proof">
-  <h1>Anoma Puzzle</h1>
-  <div id="timer">Time remaining: 20 seconds</div>
-  <p>Ask yes/no questions:</p>
-  <div class="btn-group">
-    <button id="btnGt500">Is it greater than 500?</button>
-    <button id="btnEvenOdd">Is it even or odd?</button>
-    <button id="btnPrime">Is it prime?</button>
-    <button id="btnDiv2">Is it divisible by 2?</button>
-    <button id="btnDiv3">Is it divisible by 3?</button>
-  </div>
-  <label for="numberInput">Enter your guess:</label>
-  <input type="number" id="numberInput" min="1" max="1000" placeholder="1 to 1000" />
-  <div id="attemptsLeft">Attempts remaining: 5</div>
-  <div id="answers"></div>
-  <button id="submitProofBtn">Submit Proof</button>
-  <div id="result"></div>
-</div>
-
-<!-- Sound effects -->
-<audio id="successSound" src="https://actions.google.com/sounds/v1/cartoon/clang_and_wobble.ogg" preload="auto"></audio>
-<audio id="failureSound" src="https://actions.google.com/sounds/v1/cartoon/boing.ogg" preload="auto"></audio>
+  <h1>Anoma Puzzle Test</h1>
+  <div id="timer">Timer: 20</div>
+  <button id="testBtn">Click Me</button>
+  <div id="log"></div>
 
 <script>
-(() => {
-  const secretNumber = Math.floor(Math.random() * 1000) + 1;
-  const maxAttempts = 5;
-  let attemptsUsed = 0;
-  let timeLeft = 20;
-  const answersLog = [];
+  let time = 20;
+  const timer = document.getElementById('timer');
+  const log = document.getElementById('log');
+  const btn = document.getElementById('testBtn');
 
-  const timerElem = document.getElementById('timer');
-  const attemptsLeftElem = document.getElementById('attemptsLeft');
-  const answersElem = document.getElementById('answers');
-  const resultElem = document.getElementById('result');
-
-  const buttons = {
-    gt500: document.getElementById('btnGt500'),
-    evenOdd: document.getElementById('btnEvenOdd'),
-    prime: document.getElementById('btnPrime'),
-    div2: document.getElementById('btnDiv2'),
-    div3: document.getElementById('btnDiv3'),
-  };
-
-  const successSound = document.getElementById('successSound');
-  const failureSound = document.getElementById('failureSound');
-
-  function isPrime(num) {
-    if (num < 2) return false;
-    for (let i = 2; i <= Math.sqrt(num); i++) {
-      if (num % i === 0) return false;
-    }
-    return true;
-  }
-
-  function disableButtons() {
-    Object.values(buttons).forEach(btn => btn.disabled = true);
-  }
-
-  function updateAttempts() {
-    attemptsLeftElem.textContent = `Attempts remaining: ${maxAttempts - attemptsUsed}`;
-    if (attemptsUsed >= maxAttempts) {
-      disableButtons();
-    }
-  }
-
-  function updateAnswers() {
-    answersElem.innerHTML = '<ul>' + answersLog.map(line => `<li>${line}</li>`).join('') + '</ul>';
-  }
-
-  function answerQuestion(type) {
-    if (attemptsUsed >= maxAttempts) return;
-
-    let answer = 'No';
-    if (type === 'gt500') {
-      answer = secretNumber > 500 ? 'Yes' : 'No';
-      answersLog.push(`Q: Is it greater than 500? — A: ${answer}`);
-    } else if (type === 'evenOdd') {
-      answer = secretNumber % 2 === 0 ? 'even' : 'odd';
-      answersLog.push(`Hint: The number is ${answer}.`);
-    } else if (type === 'prime') {
-      answer = isPrime(secretNumber) ? 'Yes' : 'No';
-      answersLog.push(`Q: Is it prime? — A: ${answer}`);
-    } else if (type === 'div2') {
-      answer = secretNumber % 2 === 0 ? 'Yes' : 'No';
-      answersLog.push(`Q: Is it divisible by 2? — A: ${answer}`);
-    } else if (type === 'div3') {
-      answer = secretNumber % 3 === 0 ? 'Yes' : 'No';
-      answersLog.push(`Q: Is it divisible by 3? — A: ${answer}`);
-    }
-
-    attemptsUsed++;
-    updateAttempts();
-    updateAnswers();
-  }
-
-  buttons.gt500.addEventListener('click', () => answerQuestion('gt500'));
-  buttons.evenOdd.addEventListener('click', () => answerQuestion('evenOdd'));
-  buttons.prime.addEventListener('click', () => answerQuestion('prime'));
-  buttons.div2.addEventListener('click', () => answerQuestion('div2'));
-  buttons.div3.addEventListener('click', () => answerQuestion('div3'));
-
-  document.getElementById('submitProofBtn').addEventListener('click', () => {
-    const guessInput = document.getElementById('numberInput');
-    const guess = parseInt(guessInput.value, 10);
-
-    if (!guess || guess < 1 || guess > 1000) {
-      failureSound.play();
-      resultElem.innerHTML = '<span class="failure">Please enter a valid number between 1 and 1000.</span>';
-      return;
-    }
-
-    const conditions = {
-      gt500: secretNumber > 500,
-      even: secretNumber % 2 === 0,
-      odd: secretNumber % 2 !== 0,
-      prime: isPrime(secretNumber),
-      div2: secretNumber % 2 === 0,
-      div3: secretNumber % 3 === 0,
-    };
-
-    function matchConditions(num) {
-      return (
-        (num > 500) === conditions.gt500 &&
-        (num % 2 === 0) === conditions.even &&
-        (num % 2 !== 0) === conditions.odd &&
-        isPrime(num) === conditions.prime &&
-        (num % 2 === 0) === conditions.div2 &&
-        (num % 3 === 0) === conditions.div3
-      );
-    }
-
-    if (matchConditions(guess)) {
-      successSound.play();
-      const score = maxAttempts - attemptsUsed + 1;
-      resultElem.innerHTML = `<span class="success">Proof accepted! Your guess satisfies all conditions.<br>Your score: ${score} / ${maxAttempts}</span>`;
-    } else {
-      failureSound.play();
-      resultElem.innerHTML = '<span class="failure">Proof rejected. The submitted number does not meet all conditions.</span>';
-    }
+  btn.addEventListener('click', () => {
+    log.textContent = "Button clicked!";
+    console.log("Button clicked!");
   });
 
-  function startTimer() {
-    const timerId = setInterval(() => {
-      if (timeLeft <= 0) {
-        clearInterval(timerId);
-        timerElem.textContent = "Time's up!";
-        disableButtons();
-      } else {
-        timerElem.textContent = `Time remaining: ${timeLeft} seconds`;
-        timeLeft--;
-      }
-    }, 1000);
-  }
-
-  updateAttempts();
-  startTimer();
-})();
+  const interval = setInterval(() => {
+    if(time <= 0){
+      clearInterval(interval);
+      timer.textContent = "Time's up!";
+    } else {
+      timer.textContent = `Timer: ${time}`;
+      time--;
+    }
+  }, 1000);
 </script>
+
 </body>
 </html>
