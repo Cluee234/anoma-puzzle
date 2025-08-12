@@ -37,7 +37,7 @@
 </div>
 
 <script>
-const secretNumber = 14;  // The hidden secret number (hardcoded for demo)
+const secretNumber = Math.floor(Math.random() * 11) + 10;  // Random number 10-20
 let answersLog = [];
 
 function answerQuestion(q) {
@@ -59,14 +59,12 @@ function submitProof() {
   const selected = parseInt(document.getElementById("numberSelect").value);
   const resultDiv = document.getElementById("result");
 
-  // Conditions based on the questions
   const conditions = {
     gt15: secretNumber > 15,
     even: secretNumber % 2 === 0,
     div3: secretNumber % 3 === 0
   };
 
-  // Check if selected number matches conditions
   const matchConditions = (num) => {
     return (
       (num > 15) === conditions.gt15 &&
