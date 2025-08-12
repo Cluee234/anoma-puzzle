@@ -1,0 +1,87 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<title>Anoma Puzzle: Secret Number Proof</title>
+<style>
+  body { font-family: Arial, sans-serif; background: #121212; color: #eee; text-align: center; padding: 20px; }
+  .container { max-width: 400px; margin: auto; background: #222; padding: 20px; border-radius: 12px; }
+  h1 { color: #59d8a1; }
+  .question { margin: 20px 0; font-size: 1.1em; }
+  button { background: #59d8a1; color: #121212; border: none; padding: 10px 20px; border-radius: 8px; font-weight: bold; cursor: pointer; margin: 5px; }
+  button:hover { background: #42b788; }
+  select { font-size: 1.1em; padding: 5px; margin: 10px 0; border-radius: 8px; }
+  .result { margin-top: 20px; font-weight: bold; font-size: 1.2em; }
+  .success { color: #5dff8e; }
+  .failure { color: #ff5c5c; }
+</style>
+</head>
+<body>
+<div class="container">
+  <h1>Anoma Puzzle: Secret Number Proof</h1>
+  <p>You want to prove you know a secret number between 10 and 20.</p>
+  <p>Select the number you believe is the secret number:</p>
+  <select id="numberSelect">
+    <option value="10">10</option><option value="11">11</option><option value="12">12</option><option value="13">13</option><option value="14">14</option>
+    <option value="15">15</option><option value="16">16</option><option value="17">17</option><option value="18">18</option><option value="19">19</option><option value="20">20</option>
+  </select>
+  <p class="question">Answer yes/no questions about the secret number:</p>
+  <div>
+    <button onclick="answerQuestion('gt15')">Is it greater than 15?</button>
+    <button onclick="answerQuestion('even')">Is it even?</button>
+    <button onclick="answerQuestion('div3')">Is it divisible by 3?</button>
+  </div>
+  <div id="answers"></div>
+  <button style="margin-top:20px;" onclick="submitProof()">Generate Proof</button>
+  <div id="result" class="result"></div>
+</div>
+
+<script>
+const secretNumber = 14;  // The hidden secret number (hardcoded for demo)
+let answersLog = [];
+
+function answerQuestion(q) {
+  let answer = "No";
+  if (q === "gt15") answer = secretNumber > 15 ? "Yes" : "No";
+  else if (q === "even") answer = secretNumber % 2 === 0 ? "Yes" : "No";
+  else if (q === "div3") answer = secretNumber % 3 === 0 ? "Yes" : "No";
+  
+  answersLog.push(`Question: ${q.replace(/([A-Z])/g, ' $1')} — Answer: ${answer}`);
+  updateAnswers();
+}
+
+function updateAnswers() {
+  const container = document.getElementById("answers");
+  container.innerHTML = "<ul>" + answersLog.map(a => `<li>${a}</li>`).join('') + "</ul>";
+}
+
+function submitProof() {
+  const selected = parseInt(document.getElementById("numberSelect").value);
+  const resultDiv = document.getElementById("result");
+  
+  // Conditions based on the questions
+  const conditions = {
+    gt15: secretNumber > 15,
+    even: secretNumber % 2 === 0,
+    div3: secretNumber % 3 === 0
+  };
+  
+  // Check if selected number matches conditions
+  const matchConditions = (num) => {
+    return (
+      (num > 15) === conditions.gt15 &&
+      (num % 2 === 0) === conditions.even &&
+      (num % 3 === 0) === conditions.div3
+    );
+  };
+  
+  if (matchConditions(selected)) {
+    resultDiv.innerHTML = '<span class="success">Proof accepted! You found the secret number.</span>';
+  } else {
+    resultDiv.innerHTML = '<span class="failure">Proof rejected! That number does not satisfy the conditions.</span>';
+  }
+}
+</script>
+</body>
+</html>
