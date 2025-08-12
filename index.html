@@ -171,4 +171,137 @@
 
   function renderTimer(){
     const pct = Math.max(0, (timeLeft / START_SECONDS) * 100);
-    timerBar.style.width
+    timerBar.style.width = pct + '%';
+    timeLabel.textContent = String(timeLeft);
+  }
+
+  function startRound(){
+    if(rounds >= MAX_ROUNDS){
+      setMessage(`🏆 Game over! Your total score: ${score} / ${MAX_ROUNDS}. Click "Restart Game" to play again.`, 'ok');
+      guessInput.disabled = true; submitBtn.disabled = true;
+      hintBtns.forEach(b => { b.disabled = true; b.style.display = 'none'; b.style.filter = 'none'; });
+      tryBtn.style.display = 'none';
+      restartBtn.style.display = 'inline-block';
+      return;
+    }
+
+    secret = randInt(RANGE_MIN, RANGE_MAX);
+    usedHints.clear();
+    hintsUsedCount = 0;
+    timeLeft = START_SECONDS;
+    clearInterval(timerId);
+    timerId = setInterval(tick, 1000);
+    guessInput.disabled = false; submitBtn.disabled = false;
+    tryBtn.style.display = 'none';
+    restartBtn.style.display = 'none';
+    cluesEl.innerHTML = '<em>No hints yet — click a hint above.</em>';
+    setMessage('', null);
+    renderHints(); renderStats(); renderTimer();
+    guessInput.value = '';
+  }
+
+  function endRound(won){
+    clearInterval(timerId);
+    rounds += 1;
+    renderStats();
+    guessInput.disabled = true; submitBtn.disabled = true;
+    tryBtn.style.display = 'inline-block';
+
+    if(won){
+      setMessage('🎉 Correct — round complete. Start a new round when ready.', 'ok');
+      try{ successAudio.currentTime = 0; successAudio.play().catch(()=>{}); }catch(e){}
+      score += 1;
+      renderStats();
+    } else {
+      setMessage(`⏳ Time's up — the number was ${secret}.`, 'err');
+      try{ failAudio.currentTime = 0; failAudio.play().catch(()=>{}); }catch(e){}
+    }
+  }
+
+  function tick(){
+    timeLeft--;
+    if(timeLeft < 0) timeLeft = 0;
+    renderTimer();
+    if(timeLeft <= 0) endRound(false);
+  }
+
+  function handleHint(type, btn){
+    if(timeLeft <= 0) return;
+    if(usedHints.has(type) || hintsUsedCount >= MAX_HINTS_PER_ROUND) return;
+
+    let text = '';
+    if(type === 'evenOdd') text = (secret % 2 === 0) ? 'It is even.' : 'It is odd.';
+    else if(type === 'div2') text = (secret % 2 === 0) ? 'Yes — divisible by 2.' : 'No — not divisible by 2.';
+    else if(type === 'div3') text = (secret % 3 === 0) ? 'Yes — divisible by 3.' : 'No — not divisible by 3.';
+    else if(type === 'prime') text = isPrime(secret) ? 'Yes — it is prime.' : 'No — it is not prime.';
+    else if(type === 'gt20') text = (secret > 20) ? 'Yes — greater than 20.' : 'No — 20 or below.';
+    else if(type === 'gt50') text = (secret > 50) ? 'Yes — greater than 50.' : 'No — 50 or below.';
+
+    // Remove only the <em> "No hints yet" on first hint click
+    if(hintsUsedCount === 0){
+      const noHintsEm = cluesEl.querySelector('em');
+      if(noHintsEm) noHintsEm.remove();
+    }
+
+    const node = document.createElement('div');
+    node.textContent = text;
+    cluesEl.appendChild(node);
+
+    usedHints.add(type);
+    hintsUsedCount++;
+
+    btn.disabled = true;
+    btn.style.display = 'none';
+
+    renderHints();
+  }
+
+  function submitGuess(){
+    if(timeLeft <= 0) return;
+    const val = parseInt(guessInput.value, 10);
+    if(!val || val < RANGE_MIN || val > RANGE_MAX){
+      setMessage(`Please enter a number between ${RANGE_MIN} and ${RANGE_MAX}.`, 'warn');
+      try{ failAudio.currentTime = 0; failAudio.play().catch(()=>{}); }catch(e){}
+      return;
+    }
+    if(val === secret){
+      endRound(true);
+    } else {
+      setMessage(val < secret ? '❌ Too low — try again.' : '❌ Too high — try again.', 'warn');
+      try{ failAudio.currentTime = 0; failAudio.play().catch(()=>{}); }catch(e){}
+    }
+  }
+
+  function tryNewRound(){
+    if(rounds < MAX_ROUNDS){
+      startRound();
+      setMessage('', null);
+      tryBtn.style.display = 'none';
+      restartBtn.style.display = 'none';
+    }
+  }
+
+  function restartGame(){
+    score = 0;
+    rounds = 0;
+    setMessage('', null);
+    tryBtn.style.display = 'none';
+    restartBtn.style.display = 'none';
+    renderStats();
+    startRound();
+  }
+
+  hintBtns.forEach(btn => {
+    btn.addEventListener('click', () => handleHint(btn.dataset.type, btn));
+  });
+  submitBtn.addEventListener('click', submitGuess);
+  tryBtn.addEventListener('click', tryNewRound);
+  restartBtn.addEventListener('click', restartGame);
+
+  // Start initial round on load
+  startRound();
+
+})();
+</script>
+</body>
+</html>
