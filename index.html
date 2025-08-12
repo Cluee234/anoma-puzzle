@@ -2,115 +2,182 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8" />
-<title>Anoma Puzzle: Secret Number Proof</title>
+<title>Anoma Puzzle: Proof of Secret Number Knowledge</title>
 <style>
-  body { font-family: Arial, sans-serif; background: #121212; color: #eee; text-align: center; padding: 20px; }
-  .container { max-width: 400px; margin: auto; background: #222; padding: 20px; border-radius: 12px; }
-  h1 { color: #59d8a1; }
-  .question { margin: 20px 0; font-size: 1.1em; }
-  button { background: #59d8a1; color: #121212; border: none; padding: 10px 20px; border-radius: 8px; font-weight: bold; cursor: pointer; margin: 5px; }
-  button:hover { background: #42b788; }
-  select { font-size: 1.1em; padding: 5px; margin: 10px 0; border-radius: 8px; }
-  .result { margin-top: 20px; font-weight: bold; font-size: 1.2em; }
-  .success { color: #5dff8e; }
-  .failure { color: #ff5c5c; }
+  /* ... same styles as before ... */
+  html, body {
+    margin: 0; padding: 0; height: 100%; width: 100%;
+    background-color: #000000;
+    color: #ffffff;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+  }
+  .container {
+    background: #1a1a1a;
+    padding: 36px 48px;
+    border-radius: 20px;
+    box-shadow: 0 0 30px #ff2b2baa;
+    max-width: 440px;
+    width: 90%;
+    text-align: center;
+  }
+  h1 {
+    color: #ff2b2b;
+    margin-bottom: 18px;
+    font-weight: 700;
+    font-size: 1.8rem;
+  }
+  #timer {
+    font-size: 1.4rem;
+    font-weight: 700;
+    margin-bottom: 20px;
+    color: #ff6666;
+  }
+  p.description {
+    margin-bottom: 18px;
+    font-size: 1.1rem;
+    line-height: 1.5;
+    color: #ddd;
+  }
+  p.description strong {
+    color: #ff2b2b;
+  }
+  label {
+    display: block;
+    margin-bottom: 10px;
+    font-size: 1.15rem;
+    color: #eee;
+    font-weight: 600;
+  }
+  input[type=number] {
+    font-size: 1.15rem;
+    padding: 10px 12px;
+    border-radius: 12px;
+    border: 2px solid #ff2b2b;
+    background: #1a1a1a;
+    color: #ffffff;
+    width: 100%;
+    margin-bottom: 24px;
+    box-sizing: border-box;
+  }
+  .question {
+    font-size: 1.2rem;
+    margin-bottom: 14px;
+    color: #fff5f5;
+    font-weight: 600;
+  }
+  .btn-group {
+    margin-bottom: 20px;
+  }
+  button.qBtn {
+    background: #ff2b2b;
+    color: #ffffff;
+    border: none;
+    padding: 12px 24px;
+    border-radius: 12px;
+    font-weight: 700;
+    cursor: pointer;
+    margin: 6px 6px;
+    min-width: 140px;
+    transition: background-color 0.3s ease;
+  }
+  button.qBtn:hover:not(:disabled) {
+    background: #cc0000;
+  }
+  button.qBtn:disabled {
+    background: #550000;
+    cursor: not-allowed;
+  }
+  #attemptsLeft {
+    margin-bottom: 20px;
+    font-weight: 600;
+    color: #ff6666;
+    font-size: 1.1rem;
+  }
+  #answers ul {
+    list-style: disc inside;
+    max-height: 160px;
+    overflow-y: auto;
+    padding-left: 16px;
+    color: #eee;
+    text-align: left;
+    margin: 0 0 24px 0;
+  }
+  #answers li {
+    margin-bottom: 6px;
+    line-height: 1.4;
+  }
+  #submitProofBtn {
+    background: #ff2b2b;
+    color: #fff;
+    border: none;
+    padding: 14px 28px;
+    border-radius: 14px;
+    font-weight: 700;
+    font-size: 1.1rem;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+    width: 100%;
+  }
+  #submitProofBtn:hover {
+    background: #cc0000;
+  }
+  #result {
+    margin-top: 28px;
+    font-weight: 700;
+    font-size: 1.3rem;
+    min-height: 44px;
+  }
+  .success {
+    color: #ff2b2b;
+  }
+  .failure {
+    color: #ff6666;
+  }
 </style>
 </head>
 <body>
-<div class="container">
-  <h1>Anoma Puzzle: Secret Number Proof</h1>
-  <p>You want to prove you know a secret number between 10 and 20.</p>
-  <p>Select the number you believe is the secret number:</p>
-  <select id="numberSelect">
-    <option value="10">10</option><option value="11">11</option><option value="12">12</option><option value="13">13</option><option value="14">14</option>
-    <option value="15">15</option><option value="16">16</option><option value="17">17</option><option value="18">18</option><option value="19">19</option><option value="20">20</option>
-  </select>
-  <p class="question">Answer yes/no questions about the secret number:</p>
-  <div>
-    <button onclick="answerQuestion('gt15')">Is it greater than 15?</button>
-    <button onclick="answerQuestion('evenOdd')">Is it even or odd?</button>
-    <button onclick="answerQuestion('prime')">Is it prime?</button>
-    <button onclick="answerQuestion('div2')">Is it divisible by 2?</button>
-    <button onclick="answerQuestion('div3')">Is it divisible by 3?</button>
+<div class="container" role="main" aria-label="Anoma Puzzle: Secret Number Proof">
+  <h1>Anoma Puzzle</h1>
+  <div id="timer" aria-live="polite" aria-atomic="true">Time remaining: 20 seconds</div>
+
+  <p class="description">
+    Prove your knowledge of a secret number between <strong>1 and 1000</strong>.  
+    Use the questions below to gather clues before making your guess.
+  </p>
+
+  <label for="numberInput">Enter your guess:</label>
+  <input type="number" id="numberInput" min="1" max="1000" placeholder="Enter a number from 1 to 1000" aria-describedby="attemptsLeft" />
+
+  <p class="question">Ask yes/no questions about the secret number:</p>
+  <div class="btn-group" role="group" aria-label="Question buttons">
+    <button class="qBtn" onclick="answerQuestion('gt500')">Is it greater than 500?</button>
+    <button class="qBtn" onclick="answerQuestion('evenOdd')">Is it even or odd?</button>
+    <button class="qBtn" onclick="answerQuestion('prime')">Is it prime?</button>
+    <button class="qBtn" onclick="answerQuestion('div2')">Is it divisible by 2?</button>
+    <button class="qBtn" onclick="answerQuestion('div3')">Is it divisible by 3?</button>
   </div>
-  <div id="answers"></div>
-  <button style="margin-top:20px;" onclick="submitProof()">Generate Proof</button>
-  <div id="result" class="result"></div>
+
+  <div id="attemptsLeft" aria-live="polite">Attempts remaining: 5</div>
+
+  <div id="answers" aria-live="polite" aria-atomic="false"></div>
+
+  <button id="submitProofBtn" onclick="submitProof()">Submit Proof</button>
+
+  <div id="result" role="alert" aria-live="assertive"></div>
 </div>
 
+<!-- Sound effects -->
+<audio id="successSound" src="https://actions.google.com/sounds/v1/cartoon/clang_and_wobble.ogg" preload="auto"></audio>
+<audio id="failureSound" src="https://actions.google.com/sounds/v1/cartoon/boing.ogg" preload="auto"></audio>
+
 <script>
-const secretNumber = Math.floor(Math.random() * 11) + 10;  // Random number 10-20
+const secretNumber = Math.floor(Math.random() * 1000) + 1;
 let answersLog = [];
+const maxAttempts = 5;
+let attemptsUsed = 0;
 
-function isPrime(num) {
-  if (num < 2) return false;
-  for (let i = 2; i <= Math.sqrt(num); i++) {
-    if (num % i === 0) return false;
-  }
-  return true;
-}
-
-function answerQuestion(q) {
-  let answer = "No";
-  if (q === "gt15") {
-    answer = secretNumber > 15 ? "Yes" : "No";
-    answersLog.push(`Question: Is it greater than 15? — Answer: ${answer}`);
-  }
-  else if (q === "evenOdd") {
-    const evenOrOdd = secretNumber % 2 === 0 ? "even" : "odd";
-    answersLog.push(`Hint: It is ${evenOrOdd}.`);
-  }
-  else if (q === "prime") {
-    answer = isPrime(secretNumber) ? "Yes" : "No";
-    answersLog.push(`Question: Is it prime? — Answer: ${answer}`);
-  }
-  else if (q === "div2") {
-    answer = secretNumber % 2 === 0 ? "Yes" : "No";
-    answersLog.push(`Question: Is it divisible by 2? — Answer: ${answer}`);
-  }
-  else if (q === "div3") {
-    answer = secretNumber % 3 === 0 ? "Yes" : "No";
-    answersLog.push(`Question: Is it divisible by 3? — Answer: ${answer}`);
-  }
-
-  updateAnswers();
-}
-
-function updateAnswers() {
-  const container = document.getElementById("answers");
-  container.innerHTML = "<ul>" + answersLog.map(a => `<li>${a}</li>`).join('') + "</ul>";
-}
-
-function submitProof() {
-  const selected = parseInt(document.getElementById("numberSelect").value);
-  const resultDiv = document.getElementById("result");
-
-  const conditions = {
-    gt15: secretNumber > 15,
-    even: secretNumber % 2 === 0,
-    odd: secretNumber % 2 !== 0,
-    prime: isPrime(secretNumber),
-    div2: secretNumber % 2 === 0,
-    div3: secretNumber % 3 === 0
-  };
-
-  const matchConditions = (num) => {
-    return (
-      (num > 15) === conditions.gt15 &&
-      (num % 2 === 0) === conditions.even &&
-      (num % 2 !== 0) === conditions.odd &&
-      isPrime(num) === conditions.prime &&
-      (num % 2 === 0) === conditions.div2 &&
-      (num % 3 === 0) === conditions.div3
-    );
-  };
-
-  if (matchConditions(selected)) {
-    resultDiv.innerHTML = '<span class="success">Proof accepted! You found the secret number.</span>';
-  } else {
-    resultDiv.innerHTML = '<span class="failure">Proof rejected! That number does not satisfy the conditions.</span>';
-  }
-}
-</script>
-</body>
-</html>
+let timeLeft = 20;
+const timerElem = d
