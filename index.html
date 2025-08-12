@@ -1,143 +1,71 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Anoma Puzzle</title>
-<style>
-    body {
-        background-color: #000;
-        color: white;
-        font-family: Arial, sans-serif;
-        text-align: center;
-        margin: 0;
-        padding: 0;
-    }
-    header {
-        background-color: red;
-        padding: 15px;
-        font-size: 1.5em;
-        font-weight: bold;
-    }
-    .container {
-        margin-top: 30px;
-        padding: 20px;
-    }
-    input, button {
-        padding: 10px;
-        margin: 10px;
-        font-size: 1em;
-        border-radius: 5px;
-        border: none;
-    }
-    button {
-        background-color: red;
-        color: white;
-        cursor: pointer;
-    }
-    button:hover {
-        background-color: darkred;
-    }
-    .hint {
-        margin-top: 15px;
-        font-size: 1.2em;
-        color: #ff4d4d;
-    }
-</style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Anoma Puzzle Test</title>
+    <style>
+        body {
+            background-color: #0d1117;
+            color: white;
+            font-family: Arial, sans-serif;
+            text-align: center;
+            margin-top: 50px;
+        }
+        .container {
+            max-width: 500px;
+            margin: auto;
+            background-color: #161b22;
+            padding: 20px;
+            border-radius: 15px;
+            box-shadow: 0 0 15px rgba(0, 255, 255, 0.4);
+        }
+        input, button {
+            padding: 10px;
+            margin: 10px;
+            border-radius: 10px;
+            border: none;
+            font-size: 16px;
+        }
+        button {
+            background-color: #00b3b3;
+            color: white;
+            cursor: pointer;
+        }
+        button:hover {
+            background-color: #009999;
+        }
+        .result {
+            font-size: 18px;
+            margin-top: 15px;
+        }
+        .hint {
+            margin-top: 10px;
+            color: #ffcc00;
+            font-style: italic;
+        }
+    </style>
 </head>
 <body>
+    <div class="container">
+        <h1>Anoma Puzzle Test</h1>
+        <p>Time left: <span id="timer">50</span> seconds</p>
+        <p class="hint" id="hint"></p>
 
-<header>Anoma Puzzle Challenge</header>
+        <label>Ask a question about the number:</label><br>
+        <select id="hintType">
+            <option value="even">Is it even?</option>
+            <option value="div2">Is it divisible by 2?</option>
+            <option value="div3">Is it divisible by 3?</option>
+            <option value="prime">Is it a prime number?</option>
+            <option value="gt20">Is it greater than 20?</option>
+            <option value="gt50">Is it greater than 50?</option>
+        </select>
+        <button onclick="getHint()">Ask</button>
 
-<div class="container">
-    <p id="timer">Time left: 50 seconds</p>
-    <p class="hint">Ask a Yes/No question about the number:<br>
-        (Is it even? Is it divisible by 2? Divisible by 3? A prime number? Greater than 50?)</p>
-    <input type="text" id="yesNoQuestion" placeholder="Type your Yes/No question">
-    <button onclick="askQuestion()">Ask</button>
-    
-    <br><br>
-    <input type="number" id="guessInput" placeholder="Enter your guess (1-100)">
-    <button onclick="checkGuess()">Submit Guess</button>
+        <br><br>
+        <input type="number" id="guess" placeholder="Enter your guess (1-100)" min="1" max="100">
+        <button onclick="checkGuess()">Submit Guess</button>
 
-    <p id="result"></p>
-    <button id="retryBtn" onclick="startGame()" style="display:none;">Try Again</button>
-</div>
-
-<audio id="successSound" src="https://www.soundjay.com/buttons/sounds/button-3.mp3"></audio>
-<audio id="failSound" src="https://www.soundjay.com/buttons/sounds/button-10.mp3"></audio>
-
-<script>
-let secretNumber, timeLeft, timerInterval;
-
-function startGame() {
-    secretNumber = Math.floor(Math.random() * 100) + 1;
-    timeLeft = 50;
-    document.getElementById("timer").innerText = `Time left: ${timeLeft} seconds`;
-    document.getElementById("result").innerText = "";
-    document.getElementById("retryBtn").style.display = "none";
-    document.getElementById("guessInput").value = "";
-    document.getElementById("yesNoQuestion").value = "";
-
-    clearInterval(timerInterval);
-    timerInterval = setInterval(() => {
-        timeLeft--;
-        document.getElementById("timer").innerText = `Time left: ${timeLeft} seconds`;
-        if (timeLeft <= 0) {
-            clearInterval(timerInterval);
-            document.getElementById("result").innerText = `⏳ Time's up! The number was ${secretNumber}.`;
-            document.getElementById("failSound").play();
-            document.getElementById("retryBtn").style.display = "inline-block";
-        }
-    }, 1000);
-}
-
-function askQuestion() {
-    let question = document.getElementById("yesNoQuestion").value.trim().toLowerCase();
-    let answer = "";
-
-    if (question.includes("even")) {
-        answer = (secretNumber % 2 === 0) ? "Yes" : "No";
-    } else if (question.includes("divisible by 2")) {
-        answer = (secretNumber % 2 === 0) ? "Yes" : "No";
-    } else if (question.includes("divisible by 3")) {
-        answer = (secretNumber % 3 === 0) ? "Yes" : "No";
-    } else if (question.includes("prime")) {
-        answer = isPrime(secretNumber) ? "Yes" : "No";
-    } else if (question.includes("greater than 50")) {
-        answer = (secretNumber > 50) ? "Yes" : "No";
-    } else {
-        answer = "Please ask a valid question (even, divisible by 2, divisible by 3, prime, greater than 50).";
-    }
-
-    document.getElementById("result").innerText = answer;
-}
-
-function isPrime(num) {
-    if (num < 2) return false;
-    for (let i = 2; i <= Math.sqrt(num); i++) {
-        if (num % i === 0) return false;
-    }
-    return true;
-}
-
-function checkGuess() {
-    let guess = parseInt(document.getElementById("guessInput").value);
-    if (guess === secretNumber) {
-        document.getElementById("result").innerText = "🎉 Correct! You guessed the number!";
-        document.getElementById("successSound").play();
-        clearInterval(timerInterval);
-        document.getElementById("retryBtn").style.display = "inline-block";
-    } else if (!guess) {
-        document.getElementById("result").innerText = "⚠️ Please enter a number.";
-    } else {
-        document.getElementById("result").innerText = "❌ Wrong guess. Try again.";
-        document.getElementById("failSound").play();
-    }
-}
-
-startGame();
-</script>
-
-</body>
-</html>
+        <p class="result" id="result"></p>
+        <bu
