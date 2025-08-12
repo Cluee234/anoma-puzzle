@@ -3,80 +3,56 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width,initial-scale=1" />
-<title>Anoma Puzzle — Secret Number</title>
+<title>Anoma Puzzle — Secret Number (1–100)</title>
 <style>
   :root{
-    --anoma-red: #ff2b2b;
-    --anoma-dark: #0b0b0b;
-    --card: #121212;
-    --muted: #dcdcdc;
-    --accent: #ffffff;
+    --anoma-red:#ff2b2b;
+    --bg:#070707;
+    --card:#131313;
+    --muted:#dcdcdc;
+    --white:#ffffff;
   }
-  /* Reset & layout */
-  html,body{height:100%;margin:0;background:var(--anoma-dark);font-family:Inter,Arial,sans-serif;color:var(--accent);display:flex;align-items:center;justify-content:center;padding:18px;}
-  .card{
-    width:100%;max-width:720px;background:linear-gradient(180deg, rgba(255,43,43,0.03), rgba(0,0,0,0.25)), var(--card);
-    border:1px solid rgba(255,43,43,0.12);border-radius:14px;box-shadow:0 12px 40px rgba(0,0,0,0.7);padding:20px;
-  }
-
-  /* Timer bar top */
-  .timer-wrap{height:12px;background:rgba(255,255,255,0.04);border-radius:8px;overflow:hidden;margin-bottom:14px;position:relative;}
-  .timer-bar{height:100%;background:linear-gradient(90deg,var(--anoma-red), #ff7b7b);width:100%;transition:width 0.9s linear;}
-  #timerLabel{margin:10px 0 14px 0;font-weight:700;color:#ffdede;}
-
+  html,body{height:100%;margin:0;background:var(--bg);font-family:Inter, Arial, sans-serif;color:var(--white);display:flex;align-items:center;justify-content:center;padding:18px;}
+  .card{width:100%;max-width:720px;background:linear-gradient(180deg, rgba(255,43,43,0.03), rgba(0,0,0,0.22)), var(--card);border:1px solid rgba(255,43,43,0.12);border-radius:14px;box-shadow:0 12px 40px rgba(0,0,0,0.7);padding:22px;}
   header{display:flex;align-items:center;gap:12px;margin-bottom:6px;}
-  h1{margin:0;color:var(--anoma-red);font-size:1.15rem;}
+  h1{margin:0;color:var(--anoma-red);font-size:1.25rem;}
   .lead{margin:0;color:var(--muted);font-size:0.95rem;margin-bottom:6px;}
-
-  .top-stats{display:flex;gap:14px;align-items:center;margin-bottom:14px;color:#ffdede;font-weight:600;}
-  .top-stats .small{font-weight:500;color:#f7dcdc;font-size:0.95rem;}
-
+  /* Timer */
+  .timer-wrap{height:12px;background:rgba(255,255,255,0.03);border-radius:8px;overflow:hidden;margin:14px 0 10px;position:relative;}
+  .timer-bar{height:100%;background:linear-gradient(90deg,var(--anoma-red), #ff7b7b);width:100%;transition:width 0.9s linear;}
+  #timerLabel{margin-bottom:12px;font-weight:700;color:#ffdede;}
+  /* Stats */
+  .top-stats{display:flex;gap:14px;align-items:center;margin-bottom:12px;color:#ffdede;font-weight:600;}
+  .small{font-weight:500;color:#f7dcdc;font-size:0.95rem;}
+  /* hints */
   .questions{display:flex;flex-wrap:wrap;gap:10px;margin-bottom:12px;}
-  .hint-btn{
-    padding:10px 14px;border-radius:10px;border:none;background:var(--anoma-red);color:#111;font-weight:700;cursor:pointer;
-    min-width:170px;flex:1 1 calc(33% - 10px);
-    transition:opacity 300ms ease, transform 150ms ease;
-  }
+  .hint-btn{padding:10px 14px;border-radius:10px;border:none;background:var(--anoma-red);color:#111;font-weight:700;cursor:pointer;min-width:170px;flex:1 1 calc(33% - 10px);transition:opacity 300ms ease, transform 150ms ease;}
   .hint-btn:hover{transform:translateY(-2px);}
   .hint-btn[disabled]{opacity:0.45;cursor:not-allowed;transform:none;}
-
-  .hint-btn.fade{
-    opacity:0; transform:scale(0.98); transition:opacity 500ms ease, transform 300ms ease;
-  }
-
-  .clues{background:rgba(255,255,255,0.02);padding:12px;border-radius:10px;min-height:70px;color:var(--muted);margin-bottom:14px;overflow:auto;}
+  .hint-btn.fade{opacity:0; transform:scale(0.98); transition:opacity 500ms ease, transform 300ms ease;}
+  /* clues */
+  .clues{background:rgba(255,255,255,0.02);padding:12px;border-radius:10px;min-height:70px;color:var(--muted);margin-bottom:12px;overflow:auto;}
+  /* controls */
   .controls{display:flex;gap:10px;align-items:center;margin-bottom:8px;}
-  input[type="number"]{flex:1;padding:10px 12px;border-radius:10px;border:2px solid rgba(255,43,43,0.12);background:#100606;color:var(--accent);font-size:1rem;}
+  input[type="number"]{flex:1;padding:10px 12px;border-radius:10px;border:2px solid rgba(255,43,43,0.12);background:#100606;color:var(--white);font-size:1rem;}
   #submitBtn{padding:10px 14px;border-radius:10px;border:none;background:var(--anoma-red);color:#111;font-weight:700;cursor:pointer;}
   #submitBtn:disabled{opacity:0.6;cursor:not-allowed;}
-
-  #message{margin-top:10px;font-weight:700;min-height:36px;}
+  #message{margin-top:10px;font-weight:700;min-height:40px;}
   #tryBtn{display:none;margin-top:12px;padding:8px 12px;border-radius:10px;border:1px solid rgba(255,43,43,0.14);background:#111;color:var(--anoma-red);cursor:pointer;font-weight:700;}
   .footer-note{font-size:0.85rem;color:#d9d9d9;margin-top:10px}
-
-  @media (max-width:640px){
-    .hint-btn{flex:1 1 100%; min-width:0;}
-    .controls{flex-direction:column;}
-    #submitBtn{width:100%;}
-  }
+  @media (max-width:640px){ .hint-btn{flex:1 1 100%;min-width:0;} .controls{flex-direction:column;} #submitBtn{width:100%;} }
 </style>
 </head>
 <body>
   <div class="card" role="main" aria-label="Anoma Puzzle">
-    <header>
-      <h1>🔮 Anoma Puzzle</h1>
-      <div style="flex:1"></div>
-    </header>
+    <header><h1>🔮 Anoma Puzzle</h1><div style="flex:1"></div></header>
+    <p class="lead">Prove you know the secret number (1–100). Ask up to 5 hints per round. Submit your guess before time runs out.</p>
 
-    <p class="lead">Prove you know the secret number (1–100). Ask hints, then submit your guess before the timer runs out.</p>
-
-    <div class="timer-wrap" aria-hidden="true">
-      <div id="timerBar" class="timer-bar"></div>
-    </div>
+    <div class="timer-wrap" aria-hidden="true"><div id="timerBar" class="timer-bar"></div></div>
     <div id="timerLabel">Time left: <span id="timeLeft">50</span>s</div>
 
     <div class="top-stats">
-      <div class="small">Attempts: <span id="attemptsCount">0</span></div>
+      <div class="small">Rounds: <span id="attemptsCount">0</span></div>
       <div class="small">Score: <span id="scoreCount">0</span></div>
       <div style="flex:1"></div>
     </div>
@@ -90,7 +66,7 @@
       <button class="hint-btn" data-type="gt50">Greater than 50?</button>
     </div>
 
-    <div class="clues" id="clues" aria-live="polite">No hints yet — ask any hint above.</div>
+    <div class="clues" id="clues" aria-live="polite">No hints yet — click a hint above.</div>
 
     <div class="controls">
       <input id="guessInput" type="number" min="1" max="100" placeholder="Enter your guess (1–100)" aria-label="Guess number" />
@@ -99,10 +75,10 @@
 
     <div id="message" role="status" aria-live="polite"></div>
     <button id="tryBtn">🔄 New Round</button>
-    <div class="footer-note">Sounds on success/failure. Hints disable after one use per round.</div>
+    <div class="footer-note">Hints disable after one use per round. Sounds play on success/failure (allow audio in browser).</div>
   </div>
 
-  <!-- audio -->
+  <!-- sounds -->
   <audio id="successAudio" src="https://actions.google.com/sounds/v1/cartoon/clang_and_wobble.ogg" preload="auto"></audio>
   <audio id="failAudio" src="https://actions.google.com/sounds/v1/cartoon/boing.ogg" preload="auto"></audio>
 
@@ -111,15 +87,16 @@
   // CONFIG
   const RANGE_MIN = 1, RANGE_MAX = 100;
   const START_SECONDS = 50;
-  const HINTS = ['evenOdd','div2','div3','prime','gt20','gt50'];
+  const MAX_HINTS_PER_ROUND = 5;
 
-  // STATE
+  // STATE & STORAGE
   let secret = null;
   let timeLeft = START_SECONDS;
   let timerId = null;
   let usedHints = new Set();
+  let hintsUsedCount = 0;
   let score = parseInt(localStorage.getItem('anoma_score') || '0', 10);
-  let attempts = parseInt(localStorage.getItem('anoma_attempts') || '0', 10);
+  let rounds = parseInt(localStorage.getItem('anoma_rounds') || '0', 10);
 
   // ELEMENTS
   const timerBar = document.getElementById('timerBar');
@@ -135,41 +112,28 @@
   const successAudio = document.getElementById('successAudio');
   const failAudio = document.getElementById('failAudio');
 
-  // UTIL
+  // HELPERS
   function randInt(min,max){ return Math.floor(Math.random()*(max-min+1))+min; }
-  function isPrime(n){
-    if(n < 2) return false;
-    for(let i=2;i<=Math.sqrt(n);i++) if(n % i === 0) return false;
-    return true;
-  }
-  function saveState(){
-    localStorage.setItem('anoma_score', String(score));
-    localStorage.setItem('anoma_attempts', String(attempts));
-  }
-  function setMessage(html, tone){
-    // tone: 'ok'|'warn'|'err'
-    messageEl.innerHTML = html;
-    if(tone === 'ok'){ messageEl.style.color = '#c8ffd8'; }
-    else if(tone === 'warn'){ messageEl.style.color = '#ffdca3'; }
-    else if(tone === 'err'){ messageEl.style.color = '#ffb3b3'; }
+  function isPrime(n){ if(n<2)return false; for(let i=2;i<=Math.sqrt(n);i++) if(n%i===0) return false; return true; }
+  function save(){ localStorage.setItem('anoma_score', String(score)); localStorage.setItem('anoma_rounds', String(rounds)); }
+  function setMessage(text, tone){
+    messageEl.textContent = text;
+    if(tone==='ok') messageEl.style.color = '#c8ffd8';
+    else if(tone==='warn') messageEl.style.color = '#ffdca3';
+    else if(tone==='err') messageEl.style.color = '#ffb3b3';
     else messageEl.style.color = '#fff';
   }
 
-  // RENDER
-  function renderStats(){ attemptsEl.textContent = String(attempts); scoreEl.textContent = String(score); }
-  function renderHints(){ // disable used ones
+  function renderStats(){ attemptsEl.textContent = String(rounds); scoreEl.textContent = String(score); }
+  function renderHints(){
     hintBtns.forEach(btn => {
       const t = btn.dataset.type;
-      if(usedHints.has(t)){
-        btn.disabled = true;
-        btn.classList.add('fade');
-      } else {
-        btn.disabled = false;
-        btn.classList.remove('fade');
-      }
+      if(usedHints.has(t) || hintsUsedCount >= MAX_HINTS_PER_ROUND){
+        btn.disabled = true; btn.classList.add('fade');
+      } else { btn.disabled = false; btn.classList.remove('fade'); }
     });
   }
-  function renderTimerBar(){ // width in %
+  function renderTimer(){
     const pct = Math.max(0, (timeLeft / START_SECONDS) * 100);
     timerBar.style.width = pct + '%';
     timeLabel.textContent = String(timeLeft);
@@ -177,30 +141,25 @@
 
   // GAME FLOW
   function startRound(){
-    // new secret
     secret = randInt(RANGE_MIN, RANGE_MAX);
     usedHints.clear();
+    hintsUsedCount = 0;
     timeLeft = START_SECONDS;
     clearInterval(timerId);
     timerId = setInterval(tick, 1000);
-    guessInput.disabled = false;
-    submitBtn.disabled = false;
+    guessInput.disabled = false; submitBtn.disabled = false;
     tryBtn.style.display = 'none';
-    cluesEl.innerHTML = '<em>No hints yet — click a hint below.</em>';
+    cluesEl.innerHTML = '<em>No hints yet — click a hint above.</em>';
     setMessage('', null);
-    renderHints();
-    renderStats();
-    renderTimerBar();
-    // console.debug('secret', secret); // uncomment to debug locally
+    renderHints(); renderStats(); renderTimer();
+    // console.log('DEBUG secret:', secret);
   }
 
   function endRound(won){
     clearInterval(timerId);
-    attempts += 1; // round completed
-    saveState();
-    renderStats();
-    guessInput.disabled = true;
-    submitBtn.disabled = true;
+    rounds += 1;
+    save(); renderStats();
+    guessInput.disabled = true; submitBtn.disabled = true;
     tryBtn.style.display = 'inline-block';
     if(won){
       setMessage('🎉 Correct — round complete. Start a new round when ready.', 'ok');
@@ -212,41 +171,34 @@
   }
 
   function tick(){
-    timeLeft--;
-    if(timeLeft < 0) timeLeft = 0;
-    renderTimerBar();
-    if(timeLeft <= 0){
-      endRound(false);
-    }
+    timeLeft--; if(timeLeft<0) timeLeft=0;
+    renderTimer();
+    if(timeLeft <= 0) endRound(false);
   }
 
-  // HINT LOGIC
+  // HINT HANDLING
   function handleHint(type){
-    if(usedHints.has(type) || timeLeft <= 0) return;
+    if(timeLeft <= 0) return;
+    if(usedHints.has(type) || hintsUsedCount >= MAX_HINTS_PER_ROUND) return;
+
     let text = '';
-    if(type === 'evenOdd'){
-      text = (secret % 2 === 0) ? 'It is even.' : 'It is odd.';
-    } else if(type === 'div2'){
-      text = (secret % 2 === 0) ? 'Yes — divisible by 2.' : 'No — not divisible by 2.';
-    } else if(type === 'div3'){
-      text = (secret % 3 === 0) ? 'Yes — divisible by 3.' : 'No — not divisible by 3.';
-    } else if(type === 'prime'){
-      text = isPrime(secret) ? 'Yes — it is prime.' : 'No — it is not prime.';
-    } else if(type === 'gt20'){
-      text = (secret > 20) ? 'Yes — greater than 20.' : 'No — 20 or below.';
-    } else if(type === 'gt50'){
-      text = (secret > 50) ? 'Yes — greater than 50.' : 'No — 50 or below.';
-    }
-    // add to top of clues
-    const item = document.createElement('div');
-    item.textContent = text;
-    // prepend
-    cluesEl.insertBefore(item, cluesEl.firstChild);
+    if(type === 'evenOdd') text = (secret % 2 === 0) ? 'It is even.' : 'It is odd.';
+    else if(type === 'div2') text = (secret % 2 === 0) ? 'Yes — divisible by 2.' : 'No — not divisible by 2.';
+    else if(type === 'div3') text = (secret % 3 === 0) ? 'Yes — divisible by 3.' : 'No — not divisible by 3.';
+    else if(type === 'prime') text = isPrime(secret) ? 'Yes — it is prime.' : 'No — it is not prime.';
+    else if(type === 'gt20') text = (secret > 20) ? 'Yes — greater than 20.' : 'No — 20 or below.';
+    else if(type === 'gt50') text = (secret > 50) ? 'Yes — greater than 50.' : 'No — 50 or below.';
+
+    // prepend to clues
+    const node = document.createElement('div'); node.textContent = text;
+    cluesEl.insertBefore(node, cluesEl.firstChild);
+
     usedHints.add(type);
+    hintsUsedCount++;
     renderHints();
   }
 
-  // GUESS
+  // GUESS SUBMIT
   function submitGuess(){
     if(timeLeft <= 0) return;
     const val = parseInt(guessInput.value, 10);
@@ -256,9 +208,7 @@
       return;
     }
     if(val === secret){
-      score += 1;
-      saveState();
-      renderStats();
+      score += 1; save(); renderStats();
       endRound(true);
     } else {
       setMessage(val < secret ? '❌ Too low — try again.' : '❌ Too high — try again.', 'warn');
@@ -266,21 +216,19 @@
     }
   }
 
-  // UI wiring
-  hintBtns.forEach(b => {
-    b.addEventListener('click', () => handleHint(b.dataset.type));
-  });
-
+  // WIRE UI
+  hintBtns.forEach(b => b.addEventListener('click', () => handleHint(b.dataset.type)));
   submitBtn.addEventListener('click', submitGuess);
   guessInput.addEventListener('keydown', (e) => { if(e.key === 'Enter') submitGuess(); });
   tryBtn.addEventListener('click', startRound);
 
-  // init render
+  // INIT
   renderStats();
   startRound();
 
-  // Expose for debug (optional)
-  window._anoma = { getState: ()=> ({secret, timeLeft, score, attempts}) };
+  // debugging hook (optional)
+  window._anoma = { state: ()=> ({secret, timeLeft, score, rounds, usedHints:Array.from(usedHints)}) };
+
 })();
 </script>
 </body>
