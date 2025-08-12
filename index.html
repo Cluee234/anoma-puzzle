@@ -17,14 +17,11 @@
   header{display:flex;align-items:center;gap:12px;margin-bottom:6px;}
   h1{margin:0;color:var(--anoma-red);font-size:1.25rem;}
   .lead{margin:0;color:var(--muted);font-size:0.95rem;margin-bottom:6px;}
-  /* Timer */
   .timer-wrap{height:12px;background:rgba(255,255,255,0.03);border-radius:8px;overflow:hidden;margin:14px 0 10px;position:relative;}
   .timer-bar{height:100%;background:linear-gradient(90deg,var(--anoma-red), #ff7b7b);width:100%;transition:width 0.9s linear;}
   #timerLabel{margin-bottom:12px;font-weight:700;color:#ffdede;}
-  /* Stats */
   .top-stats{display:flex;gap:14px;align-items:center;margin-bottom:12px;color:#ffdede;font-weight:600;}
   .small{font-weight:500;color:#f7dcdc;font-size:0.95rem;}
-  /* hints */
   .questions{display:flex;flex-wrap:wrap;gap:10px;margin-bottom:12px;}
   .hint-btn{
     padding:10px 14px;
@@ -40,9 +37,7 @@
   }
   .hint-btn:hover:not(:disabled){opacity:0.85;}
   .hint-btn:disabled{cursor:not-allowed;}
-  /* clues */
   .clues{background:rgba(255,255,255,0.02);padding:12px;border-radius:10px;min-height:70px;color:var(--muted);margin-bottom:12px;overflow:auto; display: flex; flex-direction: column-reverse;}
-  /* controls */
   .controls{display:flex;gap:10px;align-items:center;margin-bottom:8px;}
   input[type="number"]{flex:1;padding:10px 12px;border-radius:10px;border:2px solid rgba(255,43,43,0.12);background:#100606;color:var(--white);font-size:1rem;}
   #submitBtn{padding:10px 14px;border-radius:10px;border:none;background:var(--anoma-red);color:#111;font-weight:700;cursor:pointer;}
@@ -96,13 +91,11 @@
 
 <script>
 (() => {
-  // CONFIG
   const RANGE_MIN = 1, RANGE_MAX = 100;
   const START_SECONDS = 50;
   const MAX_HINTS_PER_ROUND = 5;
   const MAX_ROUNDS = 3;
 
-  // STATE & STORAGE
   let secret = null;
   let timeLeft = START_SECONDS;
   let timerId = null;
@@ -111,7 +104,6 @@
   let score = parseInt(localStorage.getItem('anoma_score') || '0', 10);
   let rounds = parseInt(localStorage.getItem('anoma_rounds') || '0', 10);
 
-  // ELEMENTS
   const timerBar = document.getElementById('timerBar');
   const timeLabel = document.getElementById('timeLeft');
   const attemptsEl = document.getElementById('attemptsCount');
@@ -126,7 +118,6 @@
   const successAudio = document.getElementById('successAudio');
   const failAudio = document.getElementById('failAudio');
 
-  // HELPERS
   function randInt(min,max){ return Math.floor(Math.random()*(max-min+1))+min; }
   function isPrime(n){ if(n<2)return false; for(let i=2;i<=Math.sqrt(n);i++) if(n%i===0) return false; return true; }
   function save(){ localStorage.setItem('anoma_score', String(score)); localStorage.setItem('anoma_rounds', String(rounds)); }
@@ -143,7 +134,6 @@
     hintBtns.forEach(btn => {
       const t = btn.dataset.type;
       if(usedHints.has(t)){
-        // clicked hints: hide
         btn.disabled = true;
         btn.style.display = 'none';
         btn.style.filter = 'none';
@@ -155,23 +145,20 @@
     });
 
     if(hintsUsedCount >= MAX_HINTS_PER_ROUND){
-      // Find leftover hint(s)
       const leftover = hintBtns.filter(b => !usedHints.has(b.dataset.type));
       if(leftover.length === 1){
-        // Blur and disable the last leftover hint
         leftover[0].disabled = true;
         leftover[0].style.filter = 'blur(2px)';
-        leftover[0].style.display = '';  // make sure visible
+        leftover[0].style.display = '';
       } else if(leftover.length > 1){
-        // If multiple leftover, blur and disable all leftover hints
         leftover.forEach(b => {
           b.disabled = true;
           b.style.filter = 'blur(2px)';
+          b.style.display = '';
         });
       }
     }
 
-    // Hide "No hints yet" message once any hint clicked
     if(hintsUsedCount > 0){
       cluesEl.innerHTML = '';
     } else {
@@ -184,9 +171,7 @@
     timeLabel.textContent = String(timeLeft);
   }
 
-  // GAME FLOW
   function startRound(){
-    // If max rounds reached, show total score and ask to restart
     if(rounds >= MAX_ROUNDS){
       setMessage(`🏆 Game over! Your total score: ${score} / ${MAX_ROUNDS}. Click "Restart Game" to play again.`, 'ok');
       guessInput.disabled = true; submitBtn.disabled = true;
@@ -209,7 +194,6 @@
     setMessage('', null);
     renderHints(); renderStats(); renderTimer();
     guessInput.value = '';
-    // console.log('DEBUG secret:', secret);
   }
 
   function endRound(won){
@@ -234,7 +218,6 @@
     if(timeLeft <= 0) endRound(false);
   }
 
-  // HINT HANDLING
   function handleHint(type, btn){
     if(timeLeft <= 0) return;
     if(usedHints.has(type) || hintsUsedCount >= MAX_HINTS_PER_ROUND) return;
@@ -247,11 +230,39 @@
     else if(type === 'gt20') text = (secret > 20) ? 'Yes — greater than 20.' : 'No — 20 or below.';
     else if(type === 'gt50') text = (secret > 50) ? 'Yes — greater than 50.' : 'No — 50 or below.';
 
-    const node = document.createElement('div'); node.textContent = text;
+    const node = document.createElement('div');
+    node.textContent = text;
     cluesEl.appendChild(node);
 
     usedHints.add(type);
     hintsUsedCount++;
 
     btn.disabled = true;
-    btn.style.display = 'none'
+    btn.style.display = 'none';
+
+    renderHints();
+  }
+
+  function submitGuess(){
+    if(timeLeft <= 0) return;
+    const val = parseInt(guessInput.value, 10);
+    if(!val || val < RANGE_MIN || val > RANGE_MAX){
+      setMessage(`Please enter a number between ${RANGE_MIN} and ${RANGE_MAX}.`, 'warn');
+      try{ failAudio.currentTime = 0; failAudio.play().catch(()=>{}); }catch(e){}
+      return;
+    }
+    if(val === secret){
+      endRound(true);
+    } else {
+      setMessage(val < secret ? '❌ Too low — try again.' : '❌ Too high — try again.', 'warn');
+      try{ failAudio.currentTime = 0; failAudio.play().catch(()=>{}); }catch(e){}
+    }
+  }
+
+  function restartGame(){
+    score = 0;
+    rounds = 0;
+    save();
+    setMessage('', null);
+    tryBtn.style.display = 'none';
+    restartBtn.style.display = 'none';
