@@ -36,11 +36,12 @@
     cursor:pointer;
     min-width:170px;
     flex:1 1 calc(33% - 10px);
+    transition: filter 0.3s ease;
   }
   .hint-btn:hover:not(:disabled){opacity:0.85;}
-  .hint-btn:disabled{opacity:0.45;cursor:not-allowed;}
+  .hint-btn:disabled{cursor:not-allowed;}
   /* clues */
-  .clues{background:rgba(255,255,255,0.02);padding:12px;border-radius:10px;min-height:70px;color:var(--muted);margin-bottom:12px;overflow:auto;}
+  .clues{background:rgba(255,255,255,0.02);padding:12px;border-radius:10px;min-height:70px;color:var(--muted);margin-bottom:12px;overflow:auto; display: flex; flex-direction: column-reverse;}
   /* controls */
   .controls{display:flex;gap:10px;align-items:center;margin-bottom:8px;}
   input[type="number"]{flex:1;padding:10px 12px;border-radius:10px;border:2px solid rgba(255,43,43,0.12);background:#100606;color:var(--white);font-size:1rem;}
@@ -76,7 +77,7 @@
       <button class="hint-btn" data-type="gt50">Greater than 50?</button>
     </div>
 
-    <div class="clues" id="clues" aria-live="polite">No hints yet — click a hint above.</div>
+    <div class="clues" id="clues" aria-live="polite"><em>No hints yet — click a hint above.</em></div>
 
     <div class="controls">
       <input id="guessInput" type="number" min="1" max="100" placeholder="Enter your guess (1–100)" aria-label="Guess number" />
@@ -141,14 +142,41 @@
   function renderHints(){
     hintBtns.forEach(btn => {
       const t = btn.dataset.type;
-      if(usedHints.has(t) || hintsUsedCount >= MAX_HINTS_PER_ROUND){
+      if(usedHints.has(t)){
+        // clicked hints: hide
         btn.disabled = true;
         btn.style.display = 'none';
+        btn.style.filter = 'none';
       } else {
-        btn.disabled = false;
         btn.style.display = '';
+        btn.disabled = false;
+        btn.style.filter = 'none';
       }
     });
+
+    if(hintsUsedCount >= MAX_HINTS_PER_ROUND){
+      // Find leftover hint(s)
+      const leftover = hintBtns.filter(b => !usedHints.has(b.dataset.type));
+      if(leftover.length === 1){
+        // Blur and disable the last leftover hint
+        leftover[0].disabled = true;
+        leftover[0].style.filter = 'blur(2px)';
+        leftover[0].style.display = '';  // make sure visible
+      } else if(leftover.length > 1){
+        // If multiple leftover, blur and disable all leftover hints
+        leftover.forEach(b => {
+          b.disabled = true;
+          b.style.filter = 'blur(2px)';
+        });
+      }
+    }
+
+    // Hide "No hints yet" message once any hint clicked
+    if(hintsUsedCount > 0){
+      cluesEl.innerHTML = '';
+    } else {
+      cluesEl.innerHTML = '<em>No hints yet — click a hint above.</em>';
+    }
   }
   function renderTimer(){
     const pct = Math.max(0, (timeLeft / START_SECONDS) * 100);
@@ -162,7 +190,7 @@
     if(rounds >= MAX_ROUNDS){
       setMessage(`🏆 Game over! Your total score: ${score} / ${MAX_ROUNDS}. Click "Restart Game" to play again.`, 'ok');
       guessInput.disabled = true; submitBtn.disabled = true;
-      hintBtns.forEach(b => { b.disabled = true; b.style.display = 'none'; });
+      hintBtns.forEach(b => { b.disabled = true; b.style.display = 'none'; b.style.filter = 'none'; });
       tryBtn.style.display = 'none';
       restartBtn.style.display = 'inline-block';
       return;
@@ -220,60 +248,10 @@
     else if(type === 'gt50') text = (secret > 50) ? 'Yes — greater than 50.' : 'No — 50 or below.';
 
     const node = document.createElement('div'); node.textContent = text;
-    cluesEl.insertBefore(node, cluesEl.firstChild);
+    cluesEl.appendChild(node);
 
     usedHints.add(type);
     hintsUsedCount++;
 
     btn.disabled = true;
-    btn.style.display = 'none';
-
-    renderHints();
-  }
-
-  // GUESS SUBMIT
-  function submitGuess(){
-    if(timeLeft <= 0) return;
-    const val = parseInt(guessInput.value, 10);
-    if(!val || val < RANGE_MIN || val > RANGE_MAX){
-      setMessage(`Please enter a number between ${RANGE_MIN} and ${RANGE_MAX}.`, 'warn');
-      try{ failAudio.currentTime = 0; failAudio.play().catch(()=>{}); }catch(e){}
-      return;
-    }
-    if(val === secret){
-      endRound(true);
-    } else {
-      setMessage(val < secret ? '❌ Too low — try again.' : '❌ Too high — try again.', 'warn');
-      try{ failAudio.currentTime = 0; failAudio.play().catch(()=>{}); }catch(e){}
-    }
-  }
-
-  // RESTART GAME: resets rounds & score, starts fresh
-  function restartGame(){
-    score = 0;
-    rounds = 0;
-    save();
-    setMessage('', null);
-    tryBtn.style.display = 'none';
-    restartBtn.style.display = 'none';
-    startRound();
-  }
-
-  // WIRE UI
-  hintBtns.forEach(b => b.addEventListener('click', () => handleHint(b.dataset.type, b)));
-  submitBtn.addEventListener('click', submitGuess);
-  guessInput.addEventListener('keydown', (e) => { if(e.key === 'Enter') submitGuess(); });
-  tryBtn.addEventListener('click', startRound);
-  restartBtn.addEventListener('click', restartGame);
-
-  // INIT
-  renderStats();
-  startRound();
-
-  // debugging hook (optional)
-  window._anoma = { state: ()=> ({secret, timeLeft, score, rounds, usedHints:Array.from(usedHints)}) };
-
-})();
-</script>
-</body>
-</html>
+    btn.style.display = 'none'
