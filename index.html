@@ -1,68 +1,139 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-  <title>Anoma Puzzle Test</title>
-  <style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Anoma Puzzle</title>
+<style>
     body {
-      background-color: black;
-      color: red;
-      font-family: Arial, sans-serif;
-      text-align: center;
-      padding-top: 50px;
+        font-family: Arial, sans-serif;
+        background-color: #000;
+        color: #fff;
+        text-align: center;
+        padding: 20px;
+    }
+    h1 {
+        color: #ff0000;
+    }
+    .container {
+        background-color: #111;
+        border: 2px solid #ff0000;
+        border-radius: 10px;
+        display: inline-block;
+        padding: 20px;
+        max-width: 400px;
+        width: 100%;
+    }
+    .hint {
+        font-size: 1.1em;
+        color: #ff0000;
+        margin-bottom: 15px;
+    }
+    input {
+        padding: 10px;
+        font-size: 16px;
+        width: 80%;
+        border: 2px solid #ff0000;
+        border-radius: 5px;
+        text-align: center;
+        margin-bottom: 10px;
     }
     button {
-      padding: 10px 20px;
-      font-size: 18px;
-      margin-top: 20px;
-      background-color: red;
-      color: white;
-      border: none;
-      cursor: pointer;
+        background-color: #ff0000;
+        color: #fff;
+        border: none;
+        padding: 10px 15px;
+        cursor: pointer;
+        font-size: 16px;
+        border-radius: 5px;
+        margin-top: 10px;
     }
     button:hover {
-      background-color: darkred;
+        background-color: #cc0000;
     }
-  </style>
+    #timer {
+        font-size: 18px;
+        margin: 10px 0;
+        color: white;
+    }
+    .result {
+        font-size: 1.2em;
+        margin-top: 10px;
+    }
+</style>
 </head>
 <body>
 
-  <h1>Anoma Puzzle Test</h1>
-  <p id="timer">Time left: 20 seconds</p>
+<h1>🔮 Anoma Puzzle Test</h1>
+<div class="container">
+    <div id="timer">Time left: 20 seconds</div>
+    <div class="hint" id="hint">Hint: Is it even or odd? (Yes/No)</div>
+    <input type="text" id="yesNoAnswer" placeholder="Type Yes or No">
+    <br>
+    <input type="number" id="guessInput" placeholder="Enter number (1-1000)">
+    <br>
+    <button onclick="checkGuess()">Submit Guess</button>
+    <div class="result" id="result"></div>
+</div>
 
-  <button id="clickBtn">Click Me</button>
-  <p id="result"></p>
+<audio id="successSound" src="https://assets.mixkit.co/sfx/preview/mixkit-game-level-completed-2059.mp3"></audio>
+<audio id="failSound" src="https://assets.mixkit.co/sfx/preview/mixkit-player-losing-or-failing-2042.mp3"></audio>
 
-  <script>
-    let timeLeft = 20;
-    let timerDisplay = document.getElementById("timer");
-    let resultDisplay = document.getElementById("result");
-    let clickBtn = document.getElementById("clickBtn");
+<script>
+    let targetNumber, timeLeft, timerInterval;
 
-    // Countdown timer
-    let timer = setInterval(function() {
-      timeLeft--;
-      timerDisplay.textContent = "Time left: " + timeLeft + " seconds";
+    function startGame() {
+        targetNumber = Math.floor(Math.random() * 1000) + 1;
+        timeLeft = 20;
+        document.getElementById("result").innerHTML = "";
+        document.getElementById("hint").innerText = "Hint: Is it even or odd? (Yes/No)";
+        document.getElementById("guessInput").value = "";
+        document.getElementById("yesNoAnswer").value = "";
+        startTimer();
+    }
 
-      if (timeLeft <= 0) {
-        clearInterval(timer);
-        resultDisplay.textContent = "⏳ Time’s up!";
-        clickBtn.disabled = true;
+    function startTimer() {
+        clearInterval(timerInterval);
+        document.getElementById("timer").innerText = `Time left: ${timeLeft} seconds`;
+        timerInterval = setInterval(() => {
+            timeLeft--;
+            document.getElementById("timer").innerText = `Time left: ${timeLeft} seconds`;
+            if (timeLeft <= 0) {
+                clearInterval(timerInterval);
+                document.getElementById("result").innerHTML = `<span style='color: red;'>⏳ Time's up! <button onclick='startGame()'>Try Again</button></span>`;
+                document.getElementById("failSound").play();
+            }
+        }, 1000);
+    }
 
-        // Show Try Again button
-        let tryAgainBtn = document.createElement("button");
-        tryAgainBtn.textContent = "🔄 Try Again";
-        tryAgainBtn.onclick = function() {
-          location.reload(); // reloads page
-        };
-        document.body.appendChild(tryAgainBtn);
-      }
-    }, 1000);
+    function checkGuess() {
+        let yesNoAnswer = document.getElementById("yesNoAnswer").value.trim().toLowerCase();
+        let guess = parseInt(document.getElementById("guessInput").value);
 
-    // Button click action
-    clickBtn.addEventListener("click", function() {
-      resultDisplay.textContent = "✅ Button clicked!";
-    });
-  </script>
+        if (yesNoAnswer !== "yes" && yesNoAnswer !== "no") {
+            document.getElementById("result").innerHTML = "<span style='color: yellow;'>Please answer Yes or No for the hint.</span>";
+            return;
+        }
+
+        let correctHint = (targetNumber % 2 === 0) ? "yes" : "no";
+        if (yesNoAnswer !== correctHint) {
+            document.getElementById("result").innerHTML = "<span style='color: yellow;'>Your Yes/No answer is wrong.</span>";
+            return;
+        }
+
+        if (guess === targetNumber) {
+            document.getElementById("result").innerHTML = "<span style='color: lime;'>🎉 Correct! You guessed the number!</span>";
+            document.getElementById("successSound").play();
+            clearInterval(timerInterval);
+        } else if (guess < targetNumber) {
+            document.getElementById("result").innerHTML = "<span style='color: orange;'>Too low! Try again.</span>";
+        } else {
+            document.getElementById("result").innerHTML = "<span style='color: orange;'>Too high! Try again.</span>";
+        }
+    }
+
+    startGame();
+</script>
 
 </body>
 </html>
