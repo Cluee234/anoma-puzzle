@@ -7,132 +7,126 @@
 <style>
     body {
         font-family: Arial, sans-serif;
-        background-color: #000;
+        background-color: #0a0a0a;
         color: #fff;
-        text-align: center;
-        padding: 20px;
+        margin: 0;
+        padding: 0;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        height: 100vh;
     }
     h1 {
-        color: #ff0000;
+        color: #ff007f; /* Anoma pink */
     }
     .container {
-        background-color: #111;
-        border: 2px solid #ff0000;
-        border-radius: 10px;
-        display: inline-block;
-        padding: 20px;
-        max-width: 400px;
-        width: 100%;
-    }
-    .hint {
-        font-size: 1.1em;
-        color: #ff0000;
-        margin-bottom: 15px;
-    }
-    input {
-        padding: 10px;
-        font-size: 16px;
-        width: 80%;
-        border: 2px solid #ff0000;
-        border-radius: 5px;
         text-align: center;
-        margin-bottom: 10px;
+        background: #1a1a1a;
+        padding: 20px;
+        border-radius: 10px;
+        width: 320px;
+        box-shadow: 0 0 15px rgba(255,0,127,0.5);
     }
     button {
-        background-color: #ff0000;
-        color: #fff;
+        background: #ff007f;
         border: none;
+        color: white;
         padding: 10px 15px;
-        cursor: pointer;
-        font-size: 16px;
-        border-radius: 5px;
         margin-top: 10px;
+        cursor: pointer;
+        border-radius: 5px;
+        font-size: 16px;
     }
     button:hover {
-        background-color: #cc0000;
+        background: #e60073;
+    }
+    input {
+        padding: 8px;
+        width: 60%;
+        margin-top: 10px;
+        text-align: center;
+        border-radius: 5px;
+        border: none;
+        font-size: 16px;
     }
     #timer {
-        font-size: 18px;
+        font-weight: bold;
         margin: 10px 0;
-        color: white;
+        color: #00ff99;
     }
-    .result {
-        font-size: 1.2em;
+    #message {
         margin-top: 10px;
+        font-size: 18px;
     }
 </style>
 </head>
 <body>
 
-<h1>🔮 Anoma Puzzle Test</h1>
 <div class="container">
-    <div id="timer">Time left: 20 seconds</div>
-    <div class="hint" id="hint">Hint: Is it even or odd? (Yes/No)</div>
-    <input type="text" id="yesNoAnswer" placeholder="Type Yes or No">
-    <br>
-    <input type="number" id="guessInput" placeholder="Enter number (1-1000)">
+    <h1>Anoma Puzzle Test</h1>
+    <p id="timer">Time left: 20 seconds</p>
+    <p id="hint"></p>
+    <input type="number" id="guess" placeholder="Enter number (1-1000)">
     <br>
     <button onclick="checkGuess()">Submit Guess</button>
-    <div class="result" id="result"></div>
+    <p id="message"></p>
+    <p>Score: <span id="score">0</span></p>
+    <button id="tryAgainBtn" onclick="startGame()" style="display:none;">Try Again</button>
 </div>
 
-<audio id="successSound" src="https://assets.mixkit.co/sfx/preview/mixkit-game-level-completed-2059.mp3"></audio>
-<audio id="failSound" src="https://assets.mixkit.co/sfx/preview/mixkit-player-losing-or-failing-2042.mp3"></audio>
+<audio id="successSound" src="https://actions.google.com/sounds/v1/cartoon/clang_and_wobble.ogg"></audio>
+<audio id="failSound" src="https://actions.google.com/sounds/v1/cartoon/wood_plank_flicks.ogg"></audio>
 
 <script>
-    let targetNumber, timeLeft, timerInterval;
+let randomNumber, score = 0, timer, timeLeft;
 
-    function startGame() {
-        targetNumber = Math.floor(Math.random() * 1000) + 1;
-        timeLeft = 20;
-        document.getElementById("result").innerHTML = "";
-        document.getElementById("hint").innerText = "Hint: Is it even or odd? (Yes/No)";
-        document.getElementById("guessInput").value = "";
-        document.getElementById("yesNoAnswer").value = "";
-        startTimer();
+function startGame() {
+    // Reset
+    document.getElementById("message").textContent = "";
+    document.getElementById("tryAgainBtn").style.display = "none";
+    document.getElementById("guess").value = "";
+    
+    // Generate number and hint
+    randomNumber = Math.floor(Math.random() * 1000) + 1;
+    document.getElementById("hint").textContent = 
+        `Is the number ${randomNumber % 2 === 0 ? "even" : "odd"}? (Yes/No)`;
+    
+    // Timer
+    timeLeft = 20;
+    document.getElementById("timer").textContent = `Time left: ${timeLeft} seconds`;
+    clearInterval(timer);
+    timer = setInterval(() => {
+        timeLeft--;
+        document.getElementById("timer").textContent = `Time left: ${timeLeft} seconds`;
+        if (timeLeft <= 0) {
+            clearInterval(timer);
+            document.getElementById("message").textContent = "⏳ Time's up!";
+            document.getElementById("tryAgainBtn").style.display = "inline-block";
+            document.getElementById("failSound").play();
+        }
+    }, 1000);
+}
+
+function checkGuess() {
+    const guess = parseInt(document.getElementById("guess").value);
+    if (!guess) {
+        document.getElementById("message").textContent = "Please enter a number!";
+        return;
     }
 
-    function startTimer() {
-        clearInterval(timerInterval);
-        document.getElementById("timer").innerText = `Time left: ${timeLeft} seconds`;
-        timerInterval = setInterval(() => {
-            timeLeft--;
-            document.getElementById("timer").innerText = `Time left: ${timeLeft} seconds`;
-            if (timeLeft <= 0) {
-                clearInterval(timerInterval);
-                document.getElementById("result").innerHTML = `<span style='color: red;'>⏳ Time's up! <button onclick='startGame()'>Try Again</button></span>`;
-                document.getElementById("failSound").play();
-            }
-        }, 1000);
+    if (guess === randomNumber) {
+        score++;
+        document.getElementById("message").textContent = "🎉 Correct!";
+        document.getElementById("score").textContent = score;
+        document.getElementById("successSound").play();
+    } else {
+        document.getElementById("message").textContent = "❌ Wrong! Try again!";
+        document.getElementById("failSound").play();
     }
+}
 
-    function checkGuess() {
-        let yesNoAnswer = document.getElementById("yesNoAnswer").value.trim().toLowerCase();
-        let guess = parseInt(document.getElementById("guessInput").value);
-
-        if (yesNoAnswer !== "yes" && yesNoAnswer !== "no") {
-            document.getElementById("result").innerHTML = "<span style='color: yellow;'>Please answer Yes or No for the hint.</span>";
-            return;
-        }
-
-        let correctHint = (targetNumber % 2 === 0) ? "yes" : "no";
-        if (yesNoAnswer !== correctHint) {
-            document.getElementById("result").innerHTML = "<span style='color: yellow;'>Your Yes/No answer is wrong.</span>";
-            return;
-        }
-
-        if (guess === targetNumber) {
-            document.getElementById("result").innerHTML = "<span style='color: lime;'>🎉 Correct! You guessed the number!</span>";
-            document.getElementById("successSound").play();
-            clearInterval(timerInterval);
-        } else if (guess < targetNumber) {
-            document.getElementById("result").innerHTML = "<span style='color: orange;'>Too low! Try again.</span>";
-        } else {
-            document.getElementById("result").innerHTML = "<span style='color: orange;'>Too high! Try again.</span>";
-        }
-    }
-
-    startGame();
+startGame();
 </script>
 
 </body>
