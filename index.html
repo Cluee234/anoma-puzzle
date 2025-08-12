@@ -29,6 +29,9 @@
   <div>
     <button onclick="answerQuestion('gt15')">Is it greater than 15?</button>
     <button onclick="answerQuestion('even')">Is it even?</button>
+    <button onclick="answerQuestion('odd')">Is it odd?</button>
+    <button onclick="answerQuestion('prime')">Is it prime?</button>
+    <button onclick="answerQuestion('div2')">Is it divisible by 2?</button>
     <button onclick="answerQuestion('div3')">Is it divisible by 3?</button>
   </div>
   <div id="answers"></div>
@@ -40,10 +43,21 @@
 const secretNumber = Math.floor(Math.random() * 11) + 10;  // Random number 10-20
 let answersLog = [];
 
+function isPrime(num) {
+  if (num < 2) return false;
+  for (let i = 2; i <= Math.sqrt(num); i++) {
+    if (num % i === 0) return false;
+  }
+  return true;
+}
+
 function answerQuestion(q) {
   let answer = "No";
   if (q === "gt15") answer = secretNumber > 15 ? "Yes" : "No";
   else if (q === "even") answer = secretNumber % 2 === 0 ? "Yes" : "No";
+  else if (q === "odd") answer = secretNumber % 2 !== 0 ? "Yes" : "No";
+  else if (q === "prime") answer = isPrime(secretNumber) ? "Yes" : "No";
+  else if (q === "div2") answer = secretNumber % 2 === 0 ? "Yes" : "No";
   else if (q === "div3") answer = secretNumber % 3 === 0 ? "Yes" : "No";
 
   answersLog.push(`Question: ${q.replace(/([A-Z])/g, ' $1')} — Answer: ${answer}`);
@@ -62,6 +76,9 @@ function submitProof() {
   const conditions = {
     gt15: secretNumber > 15,
     even: secretNumber % 2 === 0,
+    odd: secretNumber % 2 !== 0,
+    prime: isPrime(secretNumber),
+    div2: secretNumber % 2 === 0,
     div3: secretNumber % 3 === 0
   };
 
@@ -69,6 +86,9 @@ function submitProof() {
     return (
       (num > 15) === conditions.gt15 &&
       (num % 2 === 0) === conditions.even &&
+      (num % 2 !== 0) === conditions.odd &&
+      isPrime(num) === conditions.prime &&
+      (num % 2 === 0) === conditions.div2 &&
       (num % 3 === 0) === conditions.div3
     );
   };
