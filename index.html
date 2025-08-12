@@ -3,101 +3,114 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Anoma Puzzle Test</title>
+<title>Anoma Puzzle</title>
 <style>
     body {
-        font-family: Arial, sans-serif;
-        background-color: #0d0d0d;
+        background-color: #000;
         color: white;
+        font-family: Arial, sans-serif;
         text-align: center;
+        margin: 0;
+        padding: 0;
+    }
+    header {
+        background-color: red;
+        padding: 15px;
+        font-size: 1.5em;
+        font-weight: bold;
+    }
+    .container {
+        margin-top: 30px;
         padding: 20px;
     }
-    h1 { color: #e53935; }
-    button {
-        padding: 10px 20px;
-        margin: 5px;
-        border: none;
-        border-radius: 8px;
-        background-color: #e53935;
-        color: white;
-        font-size: 16px;
-        cursor: pointer;
-    }
-    button:hover { background-color: #ff4c4c; }
-    input {
-        padding: 8px;
-        font-size: 16px;
+    input, button {
+        padding: 10px;
+        margin: 10px;
+        font-size: 1em;
         border-radius: 5px;
         border: none;
-        margin: 10px;
     }
-    #result { margin-top: 20px; font-weight: bold; }
+    button {
+        background-color: red;
+        color: white;
+        cursor: pointer;
+    }
+    button:hover {
+        background-color: darkred;
+    }
+    .hint {
+        margin-top: 15px;
+        font-size: 1.2em;
+        color: #ff4d4d;
+    }
 </style>
 </head>
 <body>
 
-<h1>🔍 Anoma Puzzle Test</h1>
-<p>⏳ Time left: <span id="timer">30</span> seconds</p>
+<header>Anoma Puzzle Challenge</header>
 
-<div>
-    <button onclick="giveHint('oddEven')">Is it odd or even?</button>
-    <button onclick="giveHint('div2')">Divisible by 2?</button>
-    <button onclick="giveHint('div3')">Divisible by 3?</button>
-    <button onclick="giveHint('prime')">Is it prime?</button>
-    <button onclick="giveHint('gt500')">Greater than 500?</button>
+<div class="container">
+    <p id="timer">Time left: 50 seconds</p>
+    <p class="hint">Ask a Yes/No question about the number:<br>
+        (Is it even? Is it divisible by 2? Divisible by 3? A prime number? Greater than 50?)</p>
+    <input type="text" id="yesNoQuestion" placeholder="Type your Yes/No question">
+    <button onclick="askQuestion()">Ask</button>
+    
+    <br><br>
+    <input type="number" id="guessInput" placeholder="Enter your guess (1-100)">
+    <button onclick="checkGuess()">Submit Guess</button>
+
+    <p id="result"></p>
+    <button id="retryBtn" onclick="startGame()" style="display:none;">Try Again</button>
 </div>
-
-<p id="hintResult"></p>
-
-<input type="number" id="guess" placeholder="Enter your guess">
-<button onclick="checkGuess()">Submit Guess</button>
-
-<p id="result"></p>
-<button id="retryBtn" onclick="startGame()" style="display:none;">🔄 Try Again</button>
 
 <audio id="successSound" src="https://www.soundjay.com/buttons/sounds/button-3.mp3"></audio>
 <audio id="failSound" src="https://www.soundjay.com/buttons/sounds/button-10.mp3"></audio>
 
 <script>
-let secretNumber, timer, timeLeft;
+let secretNumber, timeLeft, timerInterval;
 
 function startGame() {
-    secretNumber = Math.floor(Math.random() * 1000) + 1;
-    timeLeft = 30;
-    document.getElementById("timer").textContent = timeLeft;
-    document.getElementById("result").textContent = "";
-    document.getElementById("hintResult").textContent = "";
+    secretNumber = Math.floor(Math.random() * 100) + 1;
+    timeLeft = 50;
+    document.getElementById("timer").innerText = `Time left: ${timeLeft} seconds`;
+    document.getElementById("result").innerText = "";
     document.getElementById("retryBtn").style.display = "none";
-    document.getElementById("guess").value = "";
-    clearInterval(timer);
-    timer = setInterval(countdown, 1000);
+    document.getElementById("guessInput").value = "";
+    document.getElementById("yesNoQuestion").value = "";
+
+    clearInterval(timerInterval);
+    timerInterval = setInterval(() => {
+        timeLeft--;
+        document.getElementById("timer").innerText = `Time left: ${timeLeft} seconds`;
+        if (timeLeft <= 0) {
+            clearInterval(timerInterval);
+            document.getElementById("result").innerText = `⏳ Time's up! The number was ${secretNumber}.`;
+            document.getElementById("failSound").play();
+            document.getElementById("retryBtn").style.display = "inline-block";
+        }
+    }, 1000);
 }
 
-function countdown() {
-    timeLeft--;
-    document.getElementById("timer").textContent = timeLeft;
-    if (timeLeft <= 0) {
-        clearInterval(timer);
-        document.getElementById("result").textContent = "⏰ Time's up! The number was " + secretNumber;
-        document.getElementById("failSound").play();
-        document.getElementById("retryBtn").style.display = "block";
-    }
-}
+function askQuestion() {
+    let question = document.getElementById("yesNoQuestion").value.trim().toLowerCase();
+    let answer = "";
 
-function giveHint(type) {
-    let hint = "";
-    if (type === "oddEven") {
-        hint = (secretNumber % 2 === 0) ? "✅ It's even" : "✅ It's odd";
-    } else if (type === "div2") {
-        hint = (secretNumber % 2 === 0) ? "✅ Yes, divisible by 2" : "❌ No, not divisible by 2";
-    } else if (type === "div3") {
-        hint = (secretNumber % 3 === 0) ? "✅ Yes, divisible by 3" : "❌ No, not divisible by 3";
-    } else if (type === "prime") {
-        hint = isPrime(secretNumber) ? "✅ Yes, it's a prime number" : "❌ No, not a prime";
-    } else if (type === "gt500") {
-        hint = (secretNumber > 500) ? "✅ Yes, greater than 500" : "❌ No, not greater than 500";
+    if (question.includes("even")) {
+        answer = (secretNumber % 2 === 0) ? "Yes" : "No";
+    } else if (question.includes("divisible by 2")) {
+        answer = (secretNumber % 2 === 0) ? "Yes" : "No";
+    } else if (question.includes("divisible by 3")) {
+        answer = (secretNumber % 3 === 0) ? "Yes" : "No";
+    } else if (question.includes("prime")) {
+        answer = isPrime(secretNumber) ? "Yes" : "No";
+    } else if (question.includes("greater than 50")) {
+        answer = (secretNumber > 50) ? "Yes" : "No";
+    } else {
+        answer = "Please ask a valid question (even, divisible by 2, divisible by 3, prime, greater than 50).";
     }
-    document.getElementById("hintResult").textContent = hint;
+
+    document.getElementById("result").innerText = answer;
 }
 
 function isPrime(num) {
@@ -109,14 +122,16 @@ function isPrime(num) {
 }
 
 function checkGuess() {
-    let guess = parseInt(document.getElementById("guess").value);
+    let guess = parseInt(document.getElementById("guessInput").value);
     if (guess === secretNumber) {
-        document.getElementById("result").textContent = "🎉 Correct! The number was " + secretNumber;
+        document.getElementById("result").innerText = "🎉 Correct! You guessed the number!";
         document.getElementById("successSound").play();
-        clearInterval(timer);
-        document.getElementById("retryBtn").style.display = "block";
+        clearInterval(timerInterval);
+        document.getElementById("retryBtn").style.display = "inline-block";
+    } else if (!guess) {
+        document.getElementById("result").innerText = "⚠️ Please enter a number.";
     } else {
-        document.getElementById("result").textContent = "❌ Wrong guess!";
+        document.getElementById("result").innerText = "❌ Wrong guess. Try again.";
         document.getElementById("failSound").play();
     }
 }
