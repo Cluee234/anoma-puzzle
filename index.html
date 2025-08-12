@@ -48,6 +48,7 @@
   #submitBtn:disabled{opacity:0.6;cursor:not-allowed;}
   #message{margin-top:10px;font-weight:700;min-height:40px;}
   #tryBtn{display:none;margin-top:12px;padding:8px 12px;border-radius:10px;border:1px solid rgba(255,43,43,0.14);background:#111;color:var(--anoma-red);cursor:pointer;font-weight:700;}
+  #restartBtn{display:none;margin-top:12px;padding:10px 14px;border-radius:10px;border:none;background:#ff4a4a;color:#111;cursor:pointer;font-weight:700;}
   .footer-note{font-size:0.85rem;color:#d9d9d9;margin-top:10px}
   @media (max-width:640px){ .hint-btn{flex:1 1 100%;min-width:0;} .controls{flex-direction:column;} #submitBtn{width:100%;} }
 </style>
@@ -84,6 +85,7 @@
 
     <div id="message" role="status" aria-live="polite"></div>
     <button id="tryBtn">🔄 New Round</button>
+    <button id="restartBtn">♻️ Restart Game</button>
     <div class="footer-note">Hints disable after one use per round. Sounds play on success/failure (allow audio in browser).</div>
   </div>
 
@@ -97,6 +99,7 @@
   const RANGE_MIN = 1, RANGE_MAX = 100;
   const START_SECONDS = 50;
   const MAX_HINTS_PER_ROUND = 5;
+  const MAX_ROUNDS = 3;
 
   // STATE & STORAGE
   let secret = null;
@@ -118,6 +121,7 @@
   const submitBtn = document.getElementById('submitBtn');
   const messageEl = document.getElementById('message');
   const tryBtn = document.getElementById('tryBtn');
+  const restartBtn = document.getElementById('restartBtn');
   const successAudio = document.getElementById('successAudio');
   const failAudio = document.getElementById('failAudio');
 
@@ -154,6 +158,16 @@
 
   // GAME FLOW
   function startRound(){
+    // If max rounds reached, show total score and ask to restart
+    if(rounds >= MAX_ROUNDS){
+      setMessage(`🏆 Game over! Your total score: ${score} / ${MAX_ROUNDS}. Click "Restart Game" to play again.`, 'ok');
+      guessInput.disabled = true; submitBtn.disabled = true;
+      hintBtns.forEach(b => { b.disabled = true; b.style.display = 'none'; });
+      tryBtn.style.display = 'none';
+      restartBtn.style.display = 'inline-block';
+      return;
+    }
+
     secret = randInt(RANGE_MIN, RANGE_MAX);
     usedHints.clear();
     hintsUsedCount = 0;
@@ -162,9 +176,11 @@
     timerId = setInterval(tick, 1000);
     guessInput.disabled = false; submitBtn.disabled = false;
     tryBtn.style.display = 'none';
+    restartBtn.style.display = 'none';
     cluesEl.innerHTML = '<em>No hints yet — click a hint above.</em>';
     setMessage('', null);
     renderHints(); renderStats(); renderTimer();
+    guessInput.value = '';
     // console.log('DEBUG secret:', secret);
   }
 
@@ -177,6 +193,7 @@
     if(won){
       setMessage('🎉 Correct — round complete. Start a new round when ready.', 'ok');
       try{ successAudio.currentTime = 0; successAudio.play().catch(()=>{}); }catch(e){}
+      score += 1; save(); renderStats();
     } else {
       setMessage(`⏳ Time's up — the number was ${secret}.`, 'err');
       try{ failAudio.currentTime = 0; failAudio.play().catch(()=>{}); }catch(e){}
@@ -202,14 +219,12 @@
     else if(type === 'gt20') text = (secret > 20) ? 'Yes — greater than 20.' : 'No — 20 or below.';
     else if(type === 'gt50') text = (secret > 50) ? 'Yes — greater than 50.' : 'No — 50 or below.';
 
-    // prepend to clues
     const node = document.createElement('div'); node.textContent = text;
     cluesEl.insertBefore(node, cluesEl.firstChild);
 
     usedHints.add(type);
     hintsUsedCount++;
 
-    // instantly disable and hide clicked hint
     btn.disabled = true;
     btn.style.display = 'none';
 
@@ -226,7 +241,6 @@
       return;
     }
     if(val === secret){
-      score += 1; save(); renderStats();
       endRound(true);
     } else {
       setMessage(val < secret ? '❌ Too low — try again.' : '❌ Too high — try again.', 'warn');
@@ -234,11 +248,23 @@
     }
   }
 
+  // RESTART GAME: resets rounds & score, starts fresh
+  function restartGame(){
+    score = 0;
+    rounds = 0;
+    save();
+    setMessage('', null);
+    tryBtn.style.display = 'none';
+    restartBtn.style.display = 'none';
+    startRound();
+  }
+
   // WIRE UI
   hintBtns.forEach(b => b.addEventListener('click', () => handleHint(b.dataset.type, b)));
   submitBtn.addEventListener('click', submitGuess);
   guessInput.addEventListener('keydown', (e) => { if(e.key === 'Enter') submitGuess(); });
   tryBtn.addEventListener('click', startRound);
+  restartBtn.addEventListener('click', restartGame);
 
   // INIT
   renderStats();
