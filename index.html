@@ -28,8 +28,7 @@
   <p class="question">Answer yes/no questions about the secret number:</p>
   <div>
     <button onclick="answerQuestion('gt15')">Is it greater than 15?</button>
-    <button onclick="answerQuestion('even')">Is it even?</button>
-    <button onclick="answerQuestion('odd')">Is it odd?</button>
+    <button onclick="answerQuestion('evenOdd')">Is it even or odd?</button>
     <button onclick="answerQuestion('prime')">Is it prime?</button>
     <button onclick="answerQuestion('div2')">Is it divisible by 2?</button>
     <button onclick="answerQuestion('div3')">Is it divisible by 3?</button>
@@ -53,14 +52,27 @@ function isPrime(num) {
 
 function answerQuestion(q) {
   let answer = "No";
-  if (q === "gt15") answer = secretNumber > 15 ? "Yes" : "No";
-  else if (q === "even") answer = secretNumber % 2 === 0 ? "Yes" : "No";
-  else if (q === "odd") answer = secretNumber % 2 !== 0 ? "Yes" : "No";
-  else if (q === "prime") answer = isPrime(secretNumber) ? "Yes" : "No";
-  else if (q === "div2") answer = secretNumber % 2 === 0 ? "Yes" : "No";
-  else if (q === "div3") answer = secretNumber % 3 === 0 ? "Yes" : "No";
+  if (q === "gt15") {
+    answer = secretNumber > 15 ? "Yes" : "No";
+    answersLog.push(`Question: Is it greater than 15? — Answer: ${answer}`);
+  }
+  else if (q === "evenOdd") {
+    const evenOrOdd = secretNumber % 2 === 0 ? "even" : "odd";
+    answersLog.push(`Hint: It is ${evenOrOdd}.`);
+  }
+  else if (q === "prime") {
+    answer = isPrime(secretNumber) ? "Yes" : "No";
+    answersLog.push(`Question: Is it prime? — Answer: ${answer}`);
+  }
+  else if (q === "div2") {
+    answer = secretNumber % 2 === 0 ? "Yes" : "No";
+    answersLog.push(`Question: Is it divisible by 2? — Answer: ${answer}`);
+  }
+  else if (q === "div3") {
+    answer = secretNumber % 3 === 0 ? "Yes" : "No";
+    answersLog.push(`Question: Is it divisible by 3? — Answer: ${answer}`);
+  }
 
-  answersLog.push(`Question: ${q.replace(/([A-Z])/g, ' $1')} — Answer: ${answer}`);
   updateAnswers();
 }
 
