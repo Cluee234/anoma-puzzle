@@ -1,133 +1,256 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Anoma Puzzle</title>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>Anoma Puzzle — Secret Number</title>
 <style>
-    body {
-        font-family: Arial, sans-serif;
-        background-color: #0a0a0a;
-        color: #fff;
-        margin: 0;
-        padding: 0;
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        justify-content: center;
-        height: 100vh;
-    }
-    h1 {
-        color: #ff007f; /* Anoma pink */
-    }
-    .container {
-        text-align: center;
-        background: #1a1a1a;
-        padding: 20px;
-        border-radius: 10px;
-        width: 320px;
-        box-shadow: 0 0 15px rgba(255,0,127,0.5);
-    }
-    button {
-        background: #ff007f;
-        border: none;
-        color: white;
-        padding: 10px 15px;
-        margin-top: 10px;
-        cursor: pointer;
-        border-radius: 5px;
-        font-size: 16px;
-    }
-    button:hover {
-        background: #e60073;
-    }
-    input {
-        padding: 8px;
-        width: 60%;
-        margin-top: 10px;
-        text-align: center;
-        border-radius: 5px;
-        border: none;
-        font-size: 16px;
-    }
-    #timer {
-        font-weight: bold;
-        margin: 10px 0;
-        color: #00ff99;
-    }
-    #message {
-        margin-top: 10px;
-        font-size: 18px;
-    }
+  :root{
+    --anoma-red: #ff2b2b;
+    --anoma-dark: #0b0b0b;
+    --card: #1b0f0f;
+    --muted: #ddd;
+  }
+  html,body{height:100%;margin:0;background:var(--anoma-dark);font-family:Inter,Arial,sans-serif;color:#fff;display:flex;align-items:center;justify-content:center;padding:20px;}
+  .card{
+    width:100%;
+    max-width:520px;
+    background:linear-gradient(180deg, rgba(255,0,0,0.03), rgba(0,0,0,0.2)), var(--card);
+    border:1px solid rgba(255,43,43,0.18);
+    border-radius:14px;
+    box-shadow:0 10px 40px rgba(0,0,0,0.7);
+    padding:22px;
+  }
+  h1{margin:0 0 10px;color:var(--anoma-red);font-size:1.25rem;}
+  p.lead{margin:0 0 14px;color:var(--muted);line-height:1.35;}
+  #timer{font-weight:700;color:#ffdcdc;margin-bottom:12px;}
+  .questions{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:14px;}
+  .qBtn{
+    flex:1 1 calc(50% - 8px);
+    min-width:140px;
+    padding:10px 12px;
+    border-radius:10px;
+    border:none;
+    background:var(--anoma-red);
+    color:#fff;
+    font-weight:700;
+    cursor:pointer;
+  }
+  .qBtn[disabled]{background:#4a0a0a;cursor:not-allowed;opacity:0.9;}
+  #attempts{color:#ffdede;font-weight:700;margin-bottom:10px;}
+  #answers{background:rgba(255,255,255,0.02);padding:10px;border-radius:8px;max-height:140px;overflow:auto;margin-bottom:12px;color:var(--muted);}
+  .controls{display:flex;gap:10px;align-items:center;margin-bottom:10px;}
+  input[type="number"]{
+    flex:1;
+    padding:10px 12px;border-radius:10px;border:2px solid rgba(255,43,43,0.25);background:#100606;color:#fff;font-size:1rem;
+  }
+  #submitBtn{
+    padding:10px 14px;border-radius:10px;border:none;background:var(--anoma-red);color:#fff;font-weight:700;cursor:pointer;
+  }
+  #submitBtn:disabled{background:#4a0a0a;cursor:not-allowed;}
+  #result{margin-top:12px;font-weight:700;min-height:38px;}
+  #tryAgain{display:none;margin-top:12px;padding:8px 12px;border-radius:10px;border:none;background:#222;color:var(--anoma-red);cursor:pointer;}
+  .small{font-size:0.9rem;color:#e6dede;margin-top:8px;}
+  @media (max-width:420px){ .qBtn{flex:1 1 100%;} .controls{flex-direction:column;align-items:stretch;} }
 </style>
 </head>
 <body>
+  <div class="card" role="main" aria-label="Anoma Puzzle">
+    <h1>🔮 Anoma Puzzle</h1>
+    <p class="lead">Prove you know the secret number between <strong>1</strong> and <strong>1000</strong>. Ask up to <strong>5</strong> yes/no questions, then submit your guess before time runs out.</p>
 
-<div class="container">
-    <h1>Anoma Puzzle Test</h1>
-    <p id="timer">Time left: 20 seconds</p>
-    <p id="hint"></p>
-    <input type="number" id="guess" placeholder="Enter number (1-1000)">
-    <br>
-    <button onclick="checkGuess()">Submit Guess</button>
-    <p id="message"></p>
-    <p>Score: <span id="score">0</span></p>
-    <button id="tryAgainBtn" onclick="startGame()" style="display:none;">Try Again</button>
-</div>
+    <div id="timer">Time left: 20s</div>
 
-<audio id="successSound" src="https://actions.google.com/sounds/v1/cartoon/clang_and_wobble.ogg"></audio>
-<audio id="failSound" src="https://actions.google.com/sounds/v1/cartoon/wood_plank_flicks.ogg"></audio>
+    <div id="attempts">Attempts left: 5</div>
+
+    <div class="questions" aria-label="Question buttons">
+      <button class="qBtn" data-q="gt500">Is it greater than 500?</button>
+      <button class="qBtn" data-q="evenOdd">Is it even or odd?</button>
+      <button class="qBtn" data-q="prime">Is it prime?</button>
+      <button class="qBtn" data-q="div2">Is it divisible by 2?</button>
+      <button class="qBtn" data-q="div3">Is it divisible by 3?</button>
+    </div>
+
+    <div id="answers" aria-live="polite" aria-atomic="false"><em>No clues yet — ask a question.</em></div>
+
+    <div class="controls">
+      <input id="guessInput" type="number" min="1" max="1000" placeholder="Enter your guess (1–1000)" aria-label="Guess number" />
+      <button id="submitBtn">Submit Guess</button>
+    </div>
+
+    <div id="result" role="status" aria-live="polite"></div>
+
+    <button id="tryAgain">🔄 Try Again</button>
+    <div class="small">Note: sounds play on success/failure (allow audio in your browser).</div>
+  </div>
+
+  <!-- sounds -->
+  <audio id="successAudio" src="https://actions.google.com/sounds/v1/cartoon/clang_and_wobble.ogg" preload="auto"></audio>
+  <audio id="failAudio" src="https://actions.google.com/sounds/v1/cartoon/boing.ogg" preload="auto"></audio>
 
 <script>
-let randomNumber, score = 0, timer, timeLeft;
+(() => {
+  // --- config ---
+  const MAX_ATTEMPTS = 5;
+  const START_TIME = 20; // seconds
 
-function startGame() {
-    // Reset
-    document.getElementById("message").textContent = "";
-    document.getElementById("tryAgainBtn").style.display = "none";
-    document.getElementById("guess").value = "";
-    
-    // Generate number and hint
-    randomNumber = Math.floor(Math.random() * 1000) + 1;
-    document.getElementById("hint").textContent = 
-        `Is the number ${randomNumber % 2 === 0 ? "even" : "odd"}? (Yes/No)`;
-    
-    // Timer
-    timeLeft = 20;
-    document.getElementById("timer").textContent = `Time left: ${timeLeft} seconds`;
-    clearInterval(timer);
-    timer = setInterval(() => {
-        timeLeft--;
-        document.getElementById("timer").textContent = `Time left: ${timeLeft} seconds`;
-        if (timeLeft <= 0) {
-            clearInterval(timer);
-            document.getElementById("message").textContent = "⏳ Time's up!";
-            document.getElementById("tryAgainBtn").style.display = "inline-block";
-            document.getElementById("failSound").play();
-        }
+  // --- state ---
+  let secretNumber = null;
+  let attemptsUsed = 0;
+  let answersLog = [];
+  let timeLeft = START_TIME;
+  let timerId = null;
+  let gameOver = false;
+
+  // --- elements ---
+  const timerEl = document.getElementById('timer');
+  const attemptsEl = document.getElementById('attempts');
+  const answersEl = document.getElementById('answers');
+  const qButtons = Array.from(document.querySelectorAll('.qBtn'));
+  const guessInput = document.getElementById('guessInput');
+  const submitBtn = document.getElementById('submitBtn');
+  const resultEl = document.getElementById('result');
+  const tryAgainBtn = document.getElementById('tryAgain');
+  const successAudio = document.getElementById('successAudio');
+  const failAudio = document.getElementById('failAudio');
+
+  // --- helpers ---
+  function randInt(min, max){ return Math.floor(Math.random()*(max-min+1))+min; }
+  function isPrime(n){
+    if(n < 2) return false;
+    for(let i=2;i<=Math.sqrt(n);i++) if(n % i === 0) return false;
+    return true;
+  }
+
+  // update UI functions
+  function renderAttempts(){ attemptsEl.textContent = `Attempts left: ${Math.max(0, MAX_ATTEMPTS - attemptsUsed)}`; }
+  function renderAnswers(){
+    if(answersLog.length === 0){ answersEl.innerHTML = '<em>No clues yet — ask a question.</em>'; return; }
+    answersEl.innerHTML = '<ul>' + answersLog.map(a => `<li>${a}</li>`).join('') + '</ul>';
+  }
+  function disableQuestionButtons(){
+    qButtons.forEach(b=> b.disabled = true);
+  }
+  function enableQuestionButtons(){
+    qButtons.forEach(b=> { b.disabled = false; b.classList.remove('used'); });
+  }
+
+  // start new game
+  function startGame(){
+    secretNumber = randInt(1,1000);
+    attemptsUsed = 0;
+    answersLog = [];
+    timeLeft = START_TIME;
+    gameOver = false;
+    guessInput.disabled = false;
+    submitBtn.disabled = false;
+    tryAgainBtn.style.display = 'none';
+    resultEl.textContent = '';
+    enableQuestionButtons();
+    renderAttempts();
+    renderAnswers();
+    startTimer();
+    // console.log('secretNumber', secretNumber); // uncomment to debug locally
+  }
+
+  // timer control
+  function startTimer(){
+    clearInterval(timerId);
+    timerEl.textContent = `Time left: ${timeLeft}s`;
+    timerId = setInterval(() => {
+      timeLeft--;
+      if(timeLeft < 0) timeLeft = 0;
+      timerEl.textContent = `Time left: ${timeLeft}s`;
+      if(timeLeft <= 0){
+        clearInterval(timerId);
+        onTimeUp();
+      }
     }, 1000);
-}
+  }
 
-function checkGuess() {
-    const guess = parseInt(document.getElementById("guess").value);
-    if (!guess) {
-        document.getElementById("message").textContent = "Please enter a number!";
-        return;
+  function onTimeUp(){
+    gameOver = true;
+    disableQuestionButtons();
+    guessInput.disabled = true;
+    submitBtn.disabled = true;
+    resultEl.innerHTML = `<span style="color:#ffb3b3">⏳ Time's up — game over. The number was <strong>${secretNumber}</strong>.</span>`;
+    tryAgainBtn.style.display = 'inline-block';
+    tryAgainBtn.focus();
+    // play fail sound
+    try{ failAudio.currentTime = 0; failAudio.play().catch(()=>{}); }catch(e){}
+  }
+
+  // question answering
+  function answerQuestion(type, button){
+    if(gameOver) return;
+    if(attemptsUsed >= MAX_ATTEMPTS) return;
+    if(button.disabled) return; // already used
+
+    let text = '';
+    if(type === 'gt500'){
+      text = `Q: Is it greater than 500? — A: ${secretNumber > 500 ? 'Yes' : 'No'}`;
+    } else if(type === 'evenOdd'){
+      text = `Hint: It is ${secretNumber % 2 === 0 ? 'even' : 'odd'}.`;
+    } else if(type === 'prime'){
+      text = `Q: Is it prime? — A: ${isPrime(secretNumber) ? 'Yes' : 'No'}`;
+    } else if(type === 'div2'){
+      text = `Q: Is it divisible by 2? — A: ${secretNumber % 2 === 0 ? 'Yes' : 'No'}`;
+    } else if(type === 'div3'){
+      text = `Q: Is it divisible by 3? — A: ${secretNumber % 3 === 0 ? 'Yes' : 'No'}`;
     }
 
-    if (guess === randomNumber) {
-        score++;
-        document.getElementById("message").textContent = "🎉 Correct!";
-        document.getElementById("score").textContent = score;
-        document.getElementById("successSound").play();
+    answersLog.unshift(text); // newest first
+    attemptsUsed++;
+    renderAttempts();
+    renderAnswers();
+
+    // visually mark button used and disable it
+    button.disabled = true;
+    button.classList.add('used');
+
+    // if out of attempts, disable all question buttons
+    if(attemptsUsed >= MAX_ATTEMPTS) disableQuestionButtons();
+  }
+
+  // submit guess
+  function submitGuess(){
+    if(gameOver) return;
+    const val = parseInt(guessInput.value, 10);
+    if(!val || val < 1 || val > 1000){
+      resultEl.innerHTML = `<span style="color:#ffd966">Please enter a valid number between 1 and 1000.</span>`;
+      try{ failAudio.currentTime = 0; failAudio.play().catch(()=>{}); }catch(e){}
+      return;
+    }
+
+    if(val === secretNumber){
+      gameOver = true;
+      clearInterval(timerId);
+      resultEl.innerHTML = `<span style="color:#c6ffdd">🎉 Proof accepted — correct number!</span>`;
+      tryAgainBtn.style.display = 'inline-block';
+      try{ successAudio.currentTime = 0; successAudio.play().catch(()=>{}); }catch(e){}
+      // disable inputs
+      disableQuestionButtons();
+      guessInput.disabled = true;
+      submitBtn.disabled = true;
     } else {
-        document.getElementById("message").textContent = "❌ Wrong! Try again!";
-        document.getElementById("failSound").play();
+      resultEl.innerHTML = `<span style="color:#ffd4a3">❌ Incorrect. ${val < secretNumber ? 'Try higher.' : 'Try lower.'}</span>`;
+      try{ failAudio.currentTime = 0; failAudio.play().catch(()=>{}); }catch(e){}
     }
-}
+  }
 
-startGame();
+  // wire up UI
+  qButtons.forEach(btn => {
+    btn.addEventListener('click', () => answerQuestion(btn.dataset.q, btn));
+  });
+  submitBtn.addEventListener('click', submitGuess);
+  guessInput.addEventListener('keydown', (e) => { if(e.key === 'Enter') submitGuess(); });
+  tryAgainBtn.addEventListener('click', startGame);
+
+  // start
+  startGame();
+
+  // expose for debugging optionally: window._anoma = { startGame, secretNumber: ()=> secretNumber };
+})();
 </script>
-
 </body>
 </html>
