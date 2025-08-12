@@ -1,70 +1,68 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Anoma Puzzle Test</title>
-    <style>
-        body {
-            background-color: black;
-            color: red;
-            font-family: Arial, sans-serif;
-            text-align: center;
-            padding-top: 50px;
-        }
-        button {
-            padding: 10px 20px;
-            font-size: 18px;
-            cursor: pointer;
-            margin-top: 10px;
-            background-color: white;
-            border: none;
-            border-radius: 5px;
-        }
-        #tryAgain {
-            display: none;
-            background-color: red;
-            color: white;
-        }
-    </style>
+  <title>Anoma Puzzle Test</title>
+  <style>
+    body {
+      background-color: black;
+      color: red;
+      font-family: Arial, sans-serif;
+      text-align: center;
+      padding-top: 50px;
+    }
+    button {
+      padding: 10px 20px;
+      font-size: 18px;
+      margin-top: 20px;
+      background-color: red;
+      color: white;
+      border: none;
+      cursor: pointer;
+    }
+    button:hover {
+      background-color: darkred;
+    }
+  </style>
 </head>
 <body>
 
-<h1>Anoma Puzzle Test</h1>
-<p>Time left: <span id="timer">20</span> seconds</p>
-<button id="clickBtn">Click Me</button>
-<p id="result"></p>
-<button id="tryAgain">Try Again</button>
+  <h1>Anoma Puzzle Test</h1>
+  <p id="timer">Time left: 20 seconds</p>
 
-<script>
+  <button id="clickBtn">Click Me</button>
+  <p id="result"></p>
+
+  <script>
     let timeLeft = 20;
-    let timerId;
+    let timerDisplay = document.getElementById("timer");
+    let resultDisplay = document.getElementById("result");
+    let clickBtn = document.getElementById("clickBtn");
 
-    function startTimer() {
-        document.getElementById("timer").textContent = timeLeft;
-        timerId = setInterval(function() {
-            timeLeft--;
-            document.getElementById("timer").textContent = timeLeft;
-            if (timeLeft <= 0) {
-                clearInterval(timerId);
-                document.getElementById("result").textContent = "⏳ Time’s up!";
-                document.getElementById("tryAgain").style.display = "inline-block";
-            }
-        }, 1000);
-    }
+    // Countdown timer
+    let timer = setInterval(function() {
+      timeLeft--;
+      timerDisplay.textContent = "Time left: " + timeLeft + " seconds";
 
-    document.getElementById("clickBtn").addEventListener("click", function() {
-        document.getElementById("result").textContent = "✅ Button clicked!";
+      if (timeLeft <= 0) {
+        clearInterval(timer);
+        resultDisplay.textContent = "⏳ Time’s up!";
+        clickBtn.disabled = true;
+
+        // Show Try Again button
+        let tryAgainBtn = document.createElement("button");
+        tryAgainBtn.textContent = "🔄 Try Again";
+        tryAgainBtn.onclick = function() {
+          location.reload(); // reloads page
+        };
+        document.body.appendChild(tryAgainBtn);
+      }
+    }, 1000);
+
+    // Button click action
+    clickBtn.addEventListener("click", function() {
+      resultDisplay.textContent = "✅ Button clicked!";
     });
-
-    document.getElementById("tryAgain").addEventListener("click", function() {
-        timeLeft = 20;
-        document.getElementById("result").textContent = "";
-        document.getElementById("tryAgain").style.display = "none";
-        startTimer();
-    });
-
-    // Start countdown
-    startTimer();
-</script>
+  </script>
 
 </body>
 </html>
