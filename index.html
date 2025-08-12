@@ -26,10 +26,26 @@
   .small{font-weight:500;color:#f7dcdc;font-size:0.95rem;}
   /* hints */
   .questions{display:flex;flex-wrap:wrap;gap:10px;margin-bottom:12px;}
-  .hint-btn{padding:10px 14px;border-radius:10px;border:none;background:var(--anoma-red);color:#111;font-weight:700;cursor:pointer;min-width:170px;flex:1 1 calc(33% - 10px);transition:opacity 300ms ease, transform 150ms ease;}
-  .hint-btn:hover{transform:translateY(-2px);}
-  .hint-btn[disabled]{opacity:0.45;cursor:not-allowed;transform:none;}
-  .hint-btn.fade{opacity:0; transform:scale(0.98); transition:opacity 500ms ease, transform 300ms ease;}
+  .hint-btn{
+    padding:10px 14px;
+    border-radius:10px;
+    border:none;
+    background:var(--anoma-red);
+    color:#111;
+    font-weight:700;
+    cursor:pointer;
+    min-width:170px;
+    flex:1 1 calc(33% - 10px);
+    transition:opacity 0.5s ease, transform 0.3s ease;
+  }
+  .hint-btn:hover:not(:disabled){transform:translateY(-2px);}
+  .hint-btn:disabled{opacity:0.45;cursor:not-allowed;transform:none;}
+  /* Fade-out animation on click */
+  .hint-btn.fade-out {
+    opacity: 0;
+    pointer-events: none;
+    transform: scale(0.95);
+  }
   /* clues */
   .clues{background:rgba(255,255,255,0.02);padding:12px;border-radius:10px;min-height:70px;color:var(--muted);margin-bottom:12px;overflow:auto;}
   /* controls */
@@ -129,8 +145,11 @@
     hintBtns.forEach(btn => {
       const t = btn.dataset.type;
       if(usedHints.has(t) || hintsUsedCount >= MAX_HINTS_PER_ROUND){
-        btn.disabled = true; btn.classList.add('fade');
-      } else { btn.disabled = false; btn.classList.remove('fade'); }
+        btn.disabled = true;
+      } else {
+        btn.disabled = false;
+        btn.classList.remove('fade-out');
+      }
     });
   }
   function renderTimer(){
@@ -177,7 +196,7 @@
   }
 
   // HINT HANDLING
-  function handleHint(type){
+  function handleHint(type, btn){
     if(timeLeft <= 0) return;
     if(usedHints.has(type) || hintsUsedCount >= MAX_HINTS_PER_ROUND) return;
 
@@ -195,6 +214,11 @@
 
     usedHints.add(type);
     hintsUsedCount++;
+
+    // Fade out the clicked button only
+    btn.classList.add('fade-out');
+    btn.disabled = true;
+
     renderHints();
   }
 
@@ -217,7 +241,7 @@
   }
 
   // WIRE UI
-  hintBtns.forEach(b => b.addEventListener('click', () => handleHint(b.dataset.type)));
+  hintBtns.forEach(b => b.addEventListener('click', () => handleHint(b.dataset.type, b)));
   submitBtn.addEventListener('click', submitGuess);
   guessInput.addEventListener('keydown', (e) => { if(e.key === 'Enter') submitGuess(); });
   tryBtn.addEventListener('click', startRound);
