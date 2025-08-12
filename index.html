@@ -4,7 +4,6 @@
 <meta charset="UTF-8" />
 <title>Anoma Puzzle: Proof of Secret Number Knowledge</title>
 <style>
-  /* ... same styles as before ... */
   html, body {
     margin: 0; padding: 0; height: 100%; width: 100%;
     background-color: #000000;
@@ -77,107 +76,4 @@
     border: none;
     padding: 12px 24px;
     border-radius: 12px;
-    font-weight: 700;
-    cursor: pointer;
-    margin: 6px 6px;
-    min-width: 140px;
-    transition: background-color 0.3s ease;
-  }
-  button.qBtn:hover:not(:disabled) {
-    background: #cc0000;
-  }
-  button.qBtn:disabled {
-    background: #550000;
-    cursor: not-allowed;
-  }
-  #attemptsLeft {
-    margin-bottom: 20px;
-    font-weight: 600;
-    color: #ff6666;
-    font-size: 1.1rem;
-  }
-  #answers ul {
-    list-style: disc inside;
-    max-height: 160px;
-    overflow-y: auto;
-    padding-left: 16px;
-    color: #eee;
-    text-align: left;
-    margin: 0 0 24px 0;
-  }
-  #answers li {
-    margin-bottom: 6px;
-    line-height: 1.4;
-  }
-  #submitProofBtn {
-    background: #ff2b2b;
-    color: #fff;
-    border: none;
-    padding: 14px 28px;
-    border-radius: 14px;
-    font-weight: 700;
-    font-size: 1.1rem;
-    cursor: pointer;
-    transition: background-color 0.3s ease;
-    width: 100%;
-  }
-  #submitProofBtn:hover {
-    background: #cc0000;
-  }
-  #result {
-    margin-top: 28px;
-    font-weight: 700;
-    font-size: 1.3rem;
-    min-height: 44px;
-  }
-  .success {
-    color: #ff2b2b;
-  }
-  .failure {
-    color: #ff6666;
-  }
-</style>
-</head>
-<body>
-<div class="container" role="main" aria-label="Anoma Puzzle: Secret Number Proof">
-  <h1>Anoma Puzzle</h1>
-  <div id="timer" aria-live="polite" aria-atomic="true">Time remaining: 20 seconds</div>
-
-  <p class="description">
-    Prove your knowledge of a secret number between <strong>1 and 1000</strong>.  
-    Use the questions below to gather clues before making your guess.
-  </p>
-
-  <label for="numberInput">Enter your guess:</label>
-  <input type="number" id="numberInput" min="1" max="1000" placeholder="Enter a number from 1 to 1000" aria-describedby="attemptsLeft" />
-
-  <p class="question">Ask yes/no questions about the secret number:</p>
-  <div class="btn-group" role="group" aria-label="Question buttons">
-    <button class="qBtn" onclick="answerQuestion('gt500')">Is it greater than 500?</button>
-    <button class="qBtn" onclick="answerQuestion('evenOdd')">Is it even or odd?</button>
-    <button class="qBtn" onclick="answerQuestion('prime')">Is it prime?</button>
-    <button class="qBtn" onclick="answerQuestion('div2')">Is it divisible by 2?</button>
-    <button class="qBtn" onclick="answerQuestion('div3')">Is it divisible by 3?</button>
-  </div>
-
-  <div id="attemptsLeft" aria-live="polite">Attempts remaining: 5</div>
-
-  <div id="answers" aria-live="polite" aria-atomic="false"></div>
-
-  <button id="submitProofBtn" onclick="submitProof()">Submit Proof</button>
-
-  <div id="result" role="alert" aria-live="assertive"></div>
-</div>
-
-<!-- Sound effects -->
-<audio id="successSound" src="https://actions.google.com/sounds/v1/cartoon/clang_and_wobble.ogg" preload="auto"></audio>
-<audio id="failureSound" src="https://actions.google.com/sounds/v1/cartoon/boing.ogg" preload="auto"></audio>
-
-<script>
-const secretNumber = Math.floor(Math.random() * 1000) + 1;
-let answersLog = [];
-const maxAttempts = 5;
-let attemptsUsed = 0;
-
-let timeLeft = 20;
-const timerElem = d
+    font-weight
